@@ -3,7 +3,6 @@ import React from 'react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar'
 import { Button } from './ui/button'
 
-
 const areas = [
   {
     title: "Marketing",
