@@ -2,6 +2,7 @@
 
 import AdminPanel from "@/components/admin-panel";
 import AppSidebar from "@/components/app-sidebar";
+import KanbanBoard from "@/components/kanban-board";
 import KanbanHeader from "@/components/kanban-header";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { areasData } from "@/data/area.data";
@@ -28,7 +29,19 @@ export default function Home() {
       <>
         {(() => {
           const area = areasData.find(area => area.id === activeArea);
-          return area ? <KanbanHeader {...area}/> : null;
+
+          return area ? (
+            <>
+              <KanbanHeader {...area} />
+              <main className="flex-1 overflow-auto bg-muted/30 p-6">
+                <KanbanBoard />
+              </main>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-muted-foreground">Seleccione un área para ver su contenido.</p>
+            </div>
+          );
         })()}
       </>   
     )
