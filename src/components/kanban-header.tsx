@@ -5,16 +5,20 @@ import React, { useEffect, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Area } from '@/types/area'
 import { boardService } from '@/services/board-service'
+import { Board } from '@/types/boards'
 
 export default function KanbanHeader(activeArea: Area) {
 
+  console.log(activeArea)
   const [status, setStatus] = useState("all");
+
+  const [boards, setBoards] = useState<Board[] | null>(null);
 
     //verificar boards en base a areas
    useEffect(() => {
     const fetchBoardsByArea = async() =>{
-      const resp = await boardService.getBoardsByArea(activeArea.id);
-      console.log(resp);
+      const boardsResponseData: Board[] | null = await boardService.getBoardsByArea(activeArea.id);
+      setBoards(boardsResponseData)
     }
 
     fetchBoardsByArea()
@@ -47,9 +51,9 @@ export default function KanbanHeader(activeArea: Area) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {projects.map((project) => (
-                <SelectItem key={project.id} value={project.title}>
-                  {project.title}
+              {boards?.map((board) => (
+                <SelectItem key={board?.id} value={board?.id}>
+                  {board.title}
                 </SelectItem>
               ))}
             </SelectContent>
