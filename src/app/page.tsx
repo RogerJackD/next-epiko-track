@@ -4,13 +4,18 @@ import AdminPanel from "@/components/admin-panel";
 import AppSidebar from "@/components/app-sidebar";
 import KanbanHeader from "@/components/kanban-header";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { areasData } from "@/data/area.data";
 import { useState } from "react";
 
 export default function Home() {
 
-  const [activeArea, setActiveArea] = useState("marketing")
+  const [activeArea, setActiveArea] = useState("1");
+
+ 
+  
 
   const renderContent = () => {
+    console.log(activeArea)
     if (activeArea === "admin") {
       return (
         <main className="flex-1 overflow-auto bg-muted/30 p-6">
@@ -20,7 +25,12 @@ export default function Home() {
     }
 
     return (
-      <KanbanHeader/>
+      <>
+        {(() => {
+          const area = areasData.find(area => area.id === activeArea);
+          return area ? <KanbanHeader {...area}/> : null;
+        })()}
+      </>   
     )
   }
 

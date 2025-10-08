@@ -5,24 +5,24 @@ import { Button } from './ui/button'
 
 const areas = [
   {
-    title: "Marketing",
-    icon: TrendingUp,
-    id: "marketing",
+    title: "Tecnología",
+    icon: Laptop,
+    id: "1",
   },
   {
     title: "Administración",
     icon: Building2,
-    id: "administration",
+    id: "2",
   },
   {
-    title: "Tecnología",
-    icon: Laptop,
-    id: "technology",
+    title: "Marketing",
+    icon: TrendingUp,
+    id: "3",
   },
   {
     title: "Recursos Humanos",
     icon: Users,
-    id: "hr",
+    id: "4",
   },
 ]
 
