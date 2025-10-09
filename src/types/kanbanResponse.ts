@@ -2,6 +2,10 @@ export interface Task {
   id: number;
   title: string;
   status: 'por_hacer' | 'en_proceso' | 'en_revision' | 'completado';
+  description?: string;
+  priority?: 'BAJA' | 'MEDIA' | 'ALTA';
+  startDate?: string;
+  dueDate?: string;
 }
 
 export interface Column {
