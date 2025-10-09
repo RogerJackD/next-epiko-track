@@ -5,30 +5,33 @@ import React, { useEffect, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Area } from '@/types/area'
 import { boardService } from '@/services/board-service'
-import { Board } from '@/types/boards'
+import { Board } from '@/types/board'
 
-export default function KanbanHeader(activeArea: Area) {
 
-  console.log(activeArea)
-  const [status, setStatus] = useState("all");
+interface KanbanHeaderProps {
+  activeArea: Area;
+  onBoardChange: (boardId: string) => void;
+}
+
+export default function KanbanHeader({activeArea , onBoardChange}: KanbanHeaderProps) {
 
   const [boards, setBoards] = useState<Board[] | null>(null);
+
+  const handleBoardChange = (BoardId: string) => {
+    console.log("boardId", BoardId)
+    onBoardChange(BoardId)
+  }
 
     //verificar boards en base a areas
    useEffect(() => {
     const fetchBoardsByArea = async() =>{
       const boardsResponseData: Board[] | null = await boardService.getBoardsByArea(activeArea.id);
+      console.log(boardsResponseData)
       setBoards(boardsResponseData)
     }
 
     fetchBoardsByArea()
   }, [activeArea])
-
-  const projects = [
-  { title: "all", id: "Todos los tableros" },
-  { title: "proyecto marketplace", id: "1" },
-  { title: "proyecto app movil", id: "2" },
-]
 
   return (
     <div className="border-b bg-background px-6 py-4">
@@ -44,8 +47,7 @@ export default function KanbanHeader(activeArea: Area) {
       <div className="flex items-center gap-2">
         <TableIcon/>
         <Select
-            value={status}
-            onValueChange={setStatus}
+            onValueChange={(value) => handleBoardChange(value)}
           >
             <SelectTrigger className="w-48">
               <SelectValue />

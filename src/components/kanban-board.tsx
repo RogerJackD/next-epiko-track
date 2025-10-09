@@ -8,13 +8,17 @@ const columns = [
   { id: "completado", title: "Completado" },
 ]
 
-export default function KanbanBoard() {
+interface KanbanBoardProps {
+    boardIdValue : string
+}
+
+export default function KanbanBoard({ boardIdValue }: KanbanBoardProps) {
   return (
     <DndContext>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
             {columns.map((column) => {
                 return (
-                    <span key={column.id}>{column.title}</span>
+                    <span key={column.id}>{column.title} el id del board actual es {boardIdValue}</span>
                 )
             })}
         </div>

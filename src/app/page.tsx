@@ -6,13 +6,18 @@ import KanbanBoard from "@/components/kanban-board";
 import KanbanHeader from "@/components/kanban-header";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { areasData } from "@/data/area.data";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 
 export default function Home() {
 
-  const [activeArea, setActiveArea] = useState("1");
+  const [activeArea, setActiveArea] = useState("1"); // id por defecto "1" = tecnologia
 
- 
+  const [boardId, setBoardId] = useState("1") //id board 1 por = defecto primer tablero de tecnlogia
+  
+  useEffect(() => {
+    console.log(boardId)
+  }, [boardId])
   
 
   const renderContent = () => {
@@ -32,9 +37,9 @@ export default function Home() {
 
           return area ? (
             <>
-              <KanbanHeader {...area} />
+              <KanbanHeader activeArea={area} onBoardChange={setBoardId} />
               <main className="flex-1 overflow-auto bg-muted/30 p-6">
-                <KanbanBoard />
+                <KanbanBoard boardIdValue={boardId}/>
               </main>
             </>
           ) : (
