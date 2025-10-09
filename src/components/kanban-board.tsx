@@ -1,5 +1,6 @@
 import { DndContext } from '@dnd-kit/core'
 import React from 'react'
+import KanbanColumn from './kanban-column'
 
 const columns = [
   { id: "pendiente", title: "Pendiente" },
@@ -18,7 +19,9 @@ export default function KanbanBoard({ boardIdValue }: KanbanBoardProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
             {columns.map((column) => {
                 return (
-                    <span key={column.id}>{column.title} el id del board actual es {boardIdValue}</span>
+                    <>
+                        <KanbanColumn key={column.id} title={column.title} status={column.id}/>
+                    </>
                 )
             })}
         </div>
