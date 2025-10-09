@@ -17,7 +17,11 @@ export default function TaskCard({task} : TaskCardProps) {
                 </div>
             </CardHeader>
             <CardContent className="pt-0 space-y-3">
-                <p className="text-xs text-muted-foreground line-clamp-2">descripcion de tarea</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{task.startDate}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{task.dueDate}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{task.priority}</p>
+
             </CardContent>
         </div>
     </Card>
