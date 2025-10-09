@@ -1,12 +1,15 @@
 import React from 'react'
 import { Badge } from './ui/badge'
+import { Task } from '@/types/kanbanResponse'
+import TaskCard from './task-card'
 
 interface KanbanColumnProps {
   title: string
   status: string
+  tasks? : Task[]
 }
 
-export default function KanbanColumn({title, status}: KanbanColumnProps) {
+export default function KanbanColumn({title, status, tasks}: KanbanColumnProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4 p-3 rounded-lg border bg-muted/50">
@@ -15,6 +18,17 @@ export default function KanbanColumn({title, status}: KanbanColumnProps) {
           4
         </Badge>
       </div>
+
+      <div className="flex-1 space-y-3 overflow-y-auto px-1">
+        {tasks && tasks.length > 0 ? (
+          tasks.map((task) => (
+            <TaskCard key={task.id} task={task} />
+          ))
+        ) : (
+          <p className="text-muted-foreground">No tasks found</p>
+        )}
+      </div>
+
     </div>
   )
 }
