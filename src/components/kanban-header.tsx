@@ -1,11 +1,12 @@
 'use client'
 
-import { TableIcon } from 'lucide-react'
+import { Plus, TableIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Area } from '@/types/area'
 import { boardService } from '@/services/board-service'
 import { Board } from '@/types/board'
+import { Button } from './ui/button'
 
 
 interface KanbanHeaderProps {
@@ -44,8 +45,11 @@ export default function KanbanHeader({activeArea , onBoardChange}: KanbanHeaderP
         </div>
       </div>
 
+      
+
       <div className="flex items-center gap-2">
         <TableIcon/>
+        <span>{boards?.length} Tableros</span>
         <Select
             onValueChange={(value) => handleBoardChange(value)}
           >
@@ -61,7 +65,14 @@ export default function KanbanHeader({activeArea , onBoardChange}: KanbanHeaderP
             </SelectContent>
           </Select>
       </div>
-      
+
+
+      <div className='flex justify-end'>
+        <Button className="gap-2 bg-green-800">
+          <Plus className="h-4 w-4" />
+          Nueva Tarea
+        </Button>
+      </div>
     </div>
   )
 }
