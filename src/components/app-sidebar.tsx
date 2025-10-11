@@ -1,4 +1,4 @@
-import { Building2, Laptop, LogOut, Settings, TrendingUp, Users } from 'lucide-react'
+import { Bell, Building2, Laptop, LogOut, Settings, TrendingUp, Users } from 'lucide-react'
 import React from 'react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar'
 import { Button } from './ui/button'
@@ -75,6 +75,26 @@ export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) 
                     </SidebarMenu>
                 </SidebarGroupContent>
             </SidebarGroup>
+
+
+            <SidebarGroup>
+                <SidebarGroupLabel className='text-lg font-semibold'>Notificaciones</SidebarGroupLabel>
+                <SidebarGroupContent>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                onClick={() => onAreaChange("notificaciones")}
+                                isActive={activeArea === "notificaciones"}
+                                className="w-full justify-start"
+                            >
+                                <Bell className="h-4 w-4" />
+                                <span>Panel de Notificaciones</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarGroupContent>
+            </SidebarGroup>
+            
         </SidebarContent>
 
         <SidebarFooter>
