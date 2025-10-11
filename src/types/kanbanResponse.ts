@@ -3,9 +3,9 @@ export interface Task {
   title: string;
   status: 'por_hacer' | 'en_proceso' | 'en_revision' | 'completado';
   description?: string;
-  priority?: 'BAJA' | 'MEDIA' | 'ALTA';
-  startDate?: string;
-  dueDate?: string;
+  priority: 'BAJA' | 'MEDIA' | 'ALTA';
+  startDate?: Date;
+  dueDate?: Date;
 }
 
 export interface Column {

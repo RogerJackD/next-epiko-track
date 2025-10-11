@@ -37,9 +37,7 @@ export default function KanbanBoard({ boardIdValue }: KanbanBoardProps) {
                 const columnData = kanbanData?.columns[column.id as keyof typeof kanbanData.columns];
                 const tasks = columnData?.tasks ?? []; 
                 return (
-                    <>
-                        <KanbanColumn key={column.id} title={column.title} status={column.id} tasks={tasks}/>
-                    </>
+                    <KanbanColumn key={column.id} title={column.title} status={column.id} tasks={tasks}/>
                 )
             })}
         </div>
