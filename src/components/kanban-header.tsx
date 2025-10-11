@@ -12,27 +12,33 @@ import { Button } from './ui/button'
 interface KanbanHeaderProps {
   activeArea: Area;
   onBoardChange: (boardId: string) => void;
+  currentBoardId: string | null;
 }
 
-export default function KanbanHeader({activeArea , onBoardChange}: KanbanHeaderProps) {
+export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}: KanbanHeaderProps) {
 
   const [boards, setBoards] = useState<Board[] | null>(null);
 
   const handleBoardChange = (BoardId: string) => {
-    console.log("boardId", BoardId)
-    onBoardChange(BoardId)
+    console.log("boardId seleccionado:", BoardId);
+    onBoardChange(BoardId);
   }
 
-    //verificar boards en base a areas
-   useEffect(() => {
-    const fetchBoardsByArea = async() =>{
+  // Verificar boards en base a areas
+  useEffect(() => {
+    const fetchBoardsByArea = async() => {
       const boardsResponseData: Board[] | null = await boardService.getBoardsByArea(activeArea.id);
-      console.log(boardsResponseData)
-      setBoards(boardsResponseData)
+      console.log("Boards del área:", boardsResponseData);
+      setBoards(boardsResponseData);
+      
+      // Seleccionar automaticamente el primer board cuando cambia el areaa
+      if (boardsResponseData && boardsResponseData.length > 0) {
+        onBoardChange(boardsResponseData[0].id);
+      }
     }
 
-    fetchBoardsByArea()
-  }, [activeArea])
+    fetchBoardsByArea();
+  }, [activeArea, onBoardChange]);
 
   return (
     <div className="border-b bg-background px-6 py-4">
@@ -45,27 +51,25 @@ export default function KanbanHeader({activeArea , onBoardChange}: KanbanHeaderP
         </div>
       </div>
 
-      
-
       <div className="flex items-center gap-2">
         <TableIcon/>
-        <span>{boards?.length} Tableros</span>
+        <span>{boards?.length || 0} Tableros</span>
         <Select
-            onValueChange={(value) => handleBoardChange(value)}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {boards?.map((board) => (
-                <SelectItem key={board?.id} value={board?.id}>
-                  {board.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          value={currentBoardId || undefined} // Valor controlado
+          onValueChange={(value) => handleBoardChange(value)}
+        >
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Seleccionar tablero" />
+          </SelectTrigger>
+          <SelectContent>
+            {boards?.map((board) => (
+              <SelectItem key={board?.id} value={board?.id}>
+                {board.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-
 
       <div className='flex justify-end'>
         <Button className="gap-2 bg-green-800">

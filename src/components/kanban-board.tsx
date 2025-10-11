@@ -14,33 +14,50 @@ const columns = [
 ]
 
 interface KanbanBoardProps {
-    boardIdValue : string
+    boardIdValue: string;
+    activeArea: string; // Añadido para forzar re-render
 }
 
-export default function KanbanBoard({ boardIdValue }: KanbanBoardProps) {
+export default function KanbanBoard({ boardIdValue, activeArea }: KanbanBoardProps) {
 
     const [kanbanData, setKanbanData] = useState<KanbanBoardResponse>();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const handleFetchKanbanById = async () => {
-            const BoardKanbanResponse: KanbanBoardResponse = await kanbanService.getKanbanBoardById(boardIdValue);
-            console.log(BoardKanbanResponse);
-            setKanbanData(BoardKanbanResponse);
+            setIsLoading(true);
+            try {
+                const BoardKanbanResponse: KanbanBoardResponse = await kanbanService.getKanbanBoardById(boardIdValue);
+                console.log("Kanban data cargada:", BoardKanbanResponse);
+                setKanbanData(BoardKanbanResponse);
+            } catch (error) {
+                console.error("Error al cargar el kanban:", error);
+            } finally {
+                setIsLoading(false);
+            }
         }
         handleFetchKanbanById();
-    }, [boardIdValue])
+    }, [boardIdValue, activeArea]); // Depende de ambos
     
-  return (
-    <DndContext>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
-            {columns.map((column) => {
-                const columnData = kanbanData?.columns[column.id as keyof typeof kanbanData.columns];
-                const tasks = columnData?.tasks ?? []; 
-                return (
-                    <KanbanColumn key={column.id} title={column.title} status={column.id} tasks={tasks}/>
-                )
-            })}
-        </div>
-    </DndContext>
-  )
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <p className="text-muted-foreground">Cargando tablero...</p>
+            </div>
+        );
+    }
+
+    return (
+        <DndContext>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
+                {columns.map((column) => {
+                    const columnData = kanbanData?.columns[column.id as keyof typeof kanbanData.columns];
+                    const tasks = columnData?.tasks ?? []; 
+                    return (
+                        <KanbanColumn key={column.id} title={column.title} status={column.id} tasks={tasks}/>
+                    )
+                })}
+            </div>
+        </DndContext>
+    )
 }

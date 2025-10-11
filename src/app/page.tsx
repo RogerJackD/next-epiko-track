@@ -11,45 +11,57 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
 
-  const [activeArea, setActiveArea] = useState("1"); // id por defecto "1" = tecnologia
-
-  const [boardId, setBoardId] = useState("1") //id board 1 por = defecto primer tablero de tecnlogia
+  const [activeArea, setActiveArea] = useState("1");
+  const [boardId, setBoardId] = useState<string | null>(null); // Cambiado a null inicial
   
+  // Resetear boardId cuando cambia el área
   useEffect(() => {
-    console.log(boardId)
-  }, [boardId])
-  
+    setBoardId(null); // Resetea el boardId al cambiar de área
+  }, [activeArea]);
+
+  useEffect(() => {
+    console.log("boardId actual:", boardId);
+  }, [boardId]);
 
   const renderContent = () => {
-    console.log(activeArea)
+    console.log("activeArea:", activeArea);
+    
     if (activeArea === "admin") {
       return (
         <main className="flex-1 overflow-auto bg-muted/30 p-6">
           <AdminPanel />
         </main>
-      )
+      );
+    }
+
+    const area = areasData.find(area => area.id === activeArea);
+
+    if (!area) {
+      return (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">Seleccione un área para ver su contenido.</p>
+        </div>
+      );
     }
 
     return (
       <>
-        {(() => {
-          const area = areasData.find(area => area.id === activeArea);
-
-          return area ? (
-            <>
-              <KanbanHeader activeArea={area} onBoardChange={setBoardId} />
-              <main className="flex-1 overflow-auto bg-muted/30 p-6">
-                <KanbanBoard boardIdValue={boardId}/>
-              </main>
-            </>
+        <KanbanHeader 
+          activeArea={area} 
+          onBoardChange={setBoardId}
+          currentBoardId={boardId} // Pasar el boardId actual
+        />
+        <main className="flex-1 overflow-auto bg-muted/30 p-6">
+          {boardId ? (
+            <KanbanBoard boardIdValue={boardId} activeArea={activeArea} />
           ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-muted-foreground">Seleccione un área para ver su contenido.</p>
+            <div className="flex items-center justify-center h-full">
+              <p className="text-muted-foreground">Seleccione un tablero para visualizar</p>
             </div>
-          );
-        })()}
-      </>   
-    )
+          )}
+        </main>
+      </>
+    );
   }
 
   return (
