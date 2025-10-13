@@ -20,7 +20,7 @@ export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}
 
   const [boards, setBoards] = useState<Board[] | null>(null);
   
-  const [openDialogTask, setOpenDialogTask] = useState(true);
+  const [openDialogTask, setOpenDialogTask] = useState(false);
 
 
   const handleBoardChange = (BoardId: string) => {
@@ -76,19 +76,14 @@ export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}
       </div>
 
       <div className='flex justify-end'>
-        <Button className="gap-2 bg-green-800">
+        <Button className="gap-2 bg-green-800 hover:bg-green-900" onClick={() => setOpenDialogTask(true)}>
           <Plus className="h-4 w-4" />
           Nueva Tarea
         </Button>
       </div>
 
       <div>
-        {openDialogTask && (
-          <div>
-            {/* Componente del diálogo */}
-            <TaskDialog />
-          </div>
-        )}
+        <TaskDialog open={openDialogTask} onOpenChange={setOpenDialogTask} />
       </div>
     </div>
   )
