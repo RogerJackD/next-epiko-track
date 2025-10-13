@@ -20,7 +20,7 @@ export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}
 
   const [boards, setBoards] = useState<Board[] | null>(null);
   
-  const [openDialogTask, setOpenDialogTask] = useState(false);
+  const [openDialogTask, setOpenDialogTask] = useState(true);
 
 
   const handleBoardChange = (BoardId: string) => {
