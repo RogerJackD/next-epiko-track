@@ -7,6 +7,7 @@ import { Area } from '@/types/area'
 import { boardService } from '@/services/board-service'
 import { Board } from '@/types/board'
 import { Button } from './ui/button'
+import TaskDialog from './task-dialog'
 
 
 interface KanbanHeaderProps {
@@ -18,6 +19,9 @@ interface KanbanHeaderProps {
 export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}: KanbanHeaderProps) {
 
   const [boards, setBoards] = useState<Board[] | null>(null);
+  
+  const [openDialogTask, setOpenDialogTask] = useState(false);
+
 
   const handleBoardChange = (BoardId: string) => {
     console.log("boardId seleccionado:", BoardId);
@@ -76,6 +80,15 @@ export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}
           <Plus className="h-4 w-4" />
           Nueva Tarea
         </Button>
+      </div>
+
+      <div>
+        {openDialogTask && (
+          <div>
+            {/* Componente del diálogo */}
+            <TaskDialog />
+          </div>
+        )}
       </div>
     </div>
   )
