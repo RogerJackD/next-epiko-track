@@ -2,7 +2,10 @@ import React from 'react'
 import { Card, CardContent, CardHeader } from './ui/card'
 import { Task } from '@/types/kanbanResponse'
 import { Badge } from './ui/badge'
-import { Calendar, Clock } from 'lucide-react'
+import { Calendar, Clock, Edit, MoreVertical, Trash2 } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
+import { Button } from './ui/button'
+import { taskService } from '@/services/task-service'
 
 interface TaskCardProps {
   task: Task
@@ -23,9 +26,44 @@ const formatDate = (date: Date | string | number) => {
   });
 };
 
+
+const handleDelete = (taskId: number) => {
+   taskService.deleteTask(taskId)
+    .then(response => {
+      console.log(response.message);
+      // Aquí puedes actualizar el estado de tu aplicación para reflejar la eliminación
+    })
+  }
+
 export default function TaskCard({task} : TaskCardProps) {
   return (
-    <Card>
+    <Card className="bg-card group relative">
+
+        <div className='absolute top-2 right-2 group-hover:opacity-100 transition-opacity z-10  '>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 hover:bg-muted"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreVertical className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>
+              <Edit className="h-3 w-3 mr-2" />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDelete(task.id)} className="text-destructive">
+              <Trash2 className="h-3 w-3 mr-2" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        </div>
 
         <div className="cursor-pointer">
             <CardHeader>
