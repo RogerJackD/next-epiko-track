@@ -1,27 +1,16 @@
-import { Board } from "@/types/board";
-
+import { User } from "@/types/user";
 
 const API_BASE_URL = 'http://localhost:3030/api';
 
-interface TaskFormData {
-    title: string;
-    description: string;
-    startDate: string;
-    dueDate: string;
-    priority: 'BAJA' | 'MEDIA' | 'ALTA';
-    userId? : string;
-}
 
-export const taskService = {
+export const userService = {
 
-    async createTasksByBoard(idBoard: string, data: TaskFormData): Promise<Board[]> {
-        
-            const response = await fetch(`${API_BASE_URL}/boards/${idBoard}/tasks`,{
-                method: 'POST',
+    async getUsers(): Promise<User[]> {
+            const response = await fetch(`${API_BASE_URL}/auth/users`,{
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(data), // Añadir userId temporalmente
             })
 
             if( !response.ok){
