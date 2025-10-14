@@ -37,5 +37,24 @@ export const taskService = {
                 throw new Error(errorMessage)
             }
             return await response.json()
+        },
+    async deleteTask(idTask: number): Promise<{message: string}> {
+        const response = await fetch(`${API_BASE_URL}/boards/tasks/${idTask}`, {
+            method: 'DELETE',
+        })
+
+        if (!response.ok) {
+            let errorMessage = `Error ${response.status}: ${response.statusText}`
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorData;
+            } catch {
+                console.log("error unexpected, check servers logs");
+            }
+
+            throw new Error(errorMessage)
         }
+
+        return await response.json()
+    }
 }
