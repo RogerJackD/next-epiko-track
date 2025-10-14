@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useForm } from 'react-hook-form';
 import { taskService } from '@/services/task-service';
+import { userService } from '@/services/user-service';
 
 const priorityColors = {
   ALTA: "bg-red-100 text-red-800 border-red-200",
@@ -24,6 +25,7 @@ interface TaskFormData {
   startDate: string;
   dueDate: string;
   priority: 'BAJA' | 'MEDIA' | 'ALTA';
+  userId? : string;
 }
 
 export default function TaskDialog({ open, onOpenChange, currentBoardId }: TaskDialogProps) {
@@ -31,10 +33,20 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId }: TaskD
 
   const { register, handleSubmit, setValue } = useForm<TaskFormData>();
 
+  const [users, setUsers] = React.useState<null | {id: string; firstName: string; lastName: string}[]>(null);
+
   const onSubmit = (data: TaskFormData) => {
     console.log("Datos del formulario:", data);
     taskService.createTasksByBoard(currentBoardId!, data)
   }
+
+  useEffect(() => {
+    userService.getUsers().then(setUsers);
+
+    return () => {
+      setUsers([]);
+    }
+  }, [])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,6 +95,22 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId }: TaskD
                 <SelectItem value="MEDIA">Media</SelectItem>
                 <SelectItem value="ALTA">Alta</SelectItem>
               </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+              <label htmlFor="assignee">Asignar a:</label>
+            <Select onValueChange={(value) => setValue("userId", value)}>
+              <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+              </SelectTrigger>
+                <SelectContent>
+                  {users?.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
             </Select>
           </div>
 
