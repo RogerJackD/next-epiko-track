@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { useForm } from 'react-hook-form';
+import { taskService } from '@/services/task-service';
 
 const priorityColors = {
   ALTA: "bg-red-100 text-red-800 border-red-200",
@@ -13,9 +15,27 @@ const priorityColors = {
 interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  currentBoardId: string | null;
 }
 
-export default function TaskDialog({ open, onOpenChange }: TaskDialogProps) {
+interface TaskFormData {
+  title: string;
+  description: string;
+  startDate: string;
+  dueDate: string;
+  priority: 'BAJA' | 'MEDIA' | 'ALTA';
+}
+
+export default function TaskDialog({ open, onOpenChange, currentBoardId }: TaskDialogProps) {
+
+
+  const { register, handleSubmit, setValue } = useForm<TaskFormData>();
+
+  const onSubmit = (data: TaskFormData) => {
+    console.log("Datos del formulario:", data);
+    taskService.createTasksByBoard(currentBoardId!, data)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -23,10 +43,10 @@ export default function TaskDialog({ open, onOpenChange }: TaskDialogProps) {
           <DialogTitle>Nueva Tarea</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-2">
             <label htmlFor="title">Título</label>
-            <Input id="title" placeholder="Nombre de la tarea" />
+            <Input id="title" placeholder="Nombre de la tarea" {...register("title")} />
           </div>
 
           <div className="space-y-2">
@@ -35,44 +55,46 @@ export default function TaskDialog({ open, onOpenChange }: TaskDialogProps) {
               id="description" 
               placeholder="Descripción de la tarea"
               rows={3}
+              className='border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 w-full rounded-md p-2'
+              {...register("description")}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label htmlFor="startDate">Fecha Inicio</label>
-              <Input id="startDate" type="datetime-local" />
+              <Input id="startDate" type="datetime-local" {...register("startDate")} />
             </div>
 
             <div className="space-y-2">
               <label htmlFor="dueDate">Fecha Límite</label>
-              <Input id="dueDate" type="datetime-local" />
+              <Input id="dueDate" type="datetime-local" {...register("dueDate")} />
             </div>
           </div>
 
           <div className="space-y-2">
             <label htmlFor="priority">Prioridad</label>
-            <Select>
+            <Select onValueChange={(value) => setValue("priority", value as 'BAJA' | 'MEDIA' | 'ALTA')}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="baja">Baja</SelectItem>
-                <SelectItem value="media">Media</SelectItem>
-                <SelectItem value="alta">Alta</SelectItem>
+                <SelectItem value="BAJA">Baja</SelectItem>
+                <SelectItem value="MEDIA">Media</SelectItem>
+                <SelectItem value="ALTA">Alta</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type='button' variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button className="bg-green-800 hover:bg-green-900">
+            <Button type='submit' className="bg-green-800 hover:bg-green-900">
               Crear
             </Button>
           </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

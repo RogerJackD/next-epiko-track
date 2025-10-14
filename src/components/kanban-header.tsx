@@ -83,7 +83,7 @@ export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}
       </div>
 
       <div>
-        <TaskDialog open={openDialogTask} onOpenChange={setOpenDialogTask} />
+        <TaskDialog open={openDialogTask} onOpenChange={setOpenDialogTask} currentBoardId={currentBoardId} />
       </div>
     </div>
   )
