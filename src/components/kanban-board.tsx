@@ -1,7 +1,7 @@
 'use client'
 
 import { DndContext } from '@dnd-kit/core'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import KanbanColumn from './kanban-column'
 import { kanbanService } from '@/services/kanban-service'
 import { KanbanBoardResponse } from '@/types/kanbanResponse'
@@ -15,7 +15,7 @@ const columns = [
 
 interface KanbanBoardProps {
     boardIdValue: string;
-    activeArea: string; // Añadido para forzar re-render
+    activeArea: string; 
 }
 
 export default function KanbanBoard({ boardIdValue, activeArea }: KanbanBoardProps) {
@@ -23,21 +23,24 @@ export default function KanbanBoard({ boardIdValue, activeArea }: KanbanBoardPro
     const [kanbanData, setKanbanData] = useState<KanbanBoardResponse>();
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        const handleFetchKanbanById = async () => {
-            setIsLoading(true);
-            try {
-                const BoardKanbanResponse: KanbanBoardResponse = await kanbanService.getKanbanBoardById(boardIdValue);
-                console.log("Kanban data cargada:", BoardKanbanResponse);
-                setKanbanData(BoardKanbanResponse);
-            } catch (error) {
-                console.error("Error al cargar el kanban:", error);
-            } finally {
-                setIsLoading(false);
-            }
+
+    const fetchKanbanData = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const BoardKanbanResponse: KanbanBoardResponse = await kanbanService.getKanbanBoardById(boardIdValue);
+            console.log("Kanban data cargada:", BoardKanbanResponse);
+            setKanbanData(BoardKanbanResponse);
+        } catch (error) {
+            console.error("Error al cargar el kanban:", error);
+        } finally {
+            setIsLoading(false);
         }
-        handleFetchKanbanById();
-    }, [boardIdValue, activeArea]); // Depende de ambos
+    }, [boardIdValue]);
+
+
+    useEffect(() => {
+        fetchKanbanData();
+    }, [fetchKanbanData, activeArea]);
     
     if (isLoading) {
         return (
@@ -54,7 +57,7 @@ export default function KanbanBoard({ boardIdValue, activeArea }: KanbanBoardPro
                     const columnData = kanbanData?.columns[column.id as keyof typeof kanbanData.columns];
                     const tasks = columnData?.tasks ?? []; 
                     return (
-                        <KanbanColumn key={column.id} title={column.title} status={column.id} tasks={tasks}/>
+                        <KanbanColumn key={column.id} title={column.title} status={column.id} tasks={tasks} onTaskDeleted={fetchKanbanData} currentBoardId={boardIdValue} />
                     )
                 })}
             </div>
