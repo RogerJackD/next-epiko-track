@@ -12,11 +12,12 @@ import { useEffect, useState } from "react";
 export default function Home() {
 
   const [activeArea, setActiveArea] = useState("1");
-  const [boardId, setBoardId] = useState<string | null>(null); // Cambiado a null inicial
+  const [boardId, setBoardId] = useState<string | null>(null); 
   
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   // Resetear boardId cuando cambia el área
   useEffect(() => {
-    setBoardId(null); // Resetea el boardId al cambiar de área
+    setBoardId(null); // Resetea el boardId al cambiar de area
   }, [activeArea]);
 
   useEffect(() => {
@@ -49,11 +50,12 @@ export default function Home() {
         <KanbanHeader 
           activeArea={area} 
           onBoardChange={setBoardId}
-          currentBoardId={boardId} // Pasar el boardId actual
+          currentBoardId={boardId}
+          onTaskCreated={() => setRefreshTrigger(prev => prev + 1)}
         />
         <main className="flex-1 overflow-auto bg-muted/30 p-6">
           {boardId ? (
-            <KanbanBoard boardIdValue={boardId} activeArea={activeArea} />
+            <KanbanBoard boardIdValue={boardId} activeArea={activeArea} key={refreshTrigger}/>
           ) : (
             <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground">Seleccione un tablero para visualizar</p>
