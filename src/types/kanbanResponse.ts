@@ -5,8 +5,8 @@ export interface Task {
   status: 'por_hacer' | 'en_proceso' | 'en_revision' | 'completado';
   description?: string;
   priority: 'BAJA' | 'MEDIA' | 'ALTA';
-  startDate?: Date;
-  dueDate?: Date;
+  startDate?: string;
+  dueDate?: string;
   assignedUsers?: AssignedUsers[];
 }
 export interface User {
