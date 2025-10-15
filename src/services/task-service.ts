@@ -9,7 +9,7 @@ interface TaskFormData {
     startDate: string;
     dueDate: string;
     priority: 'BAJA' | 'MEDIA' | 'ALTA';
-    userId? : string;
+    userIds? : string[];
 }
 
 export const taskService = {
@@ -56,5 +56,29 @@ export const taskService = {
         }
 
         return await response.json()
+    },
+
+    async updateTask(idTask: number, taskData: Partial<TaskFormData>): Promise<{message: string}> {
+    const response = await fetch(`${API_BASE_URL}/boards/tasks/${idTask}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(taskData),
+    })
+
+    if (!response.ok) {
+        let errorMessage = `Error ${response.status}: ${response.statusText}`
+        try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorData;
+        } catch {
+            console.log("error unexpected, check servers logs");
+        }
+
+        throw new Error(errorMessage)
+    }
+
+    return await response.json()
     }
 }
