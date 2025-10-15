@@ -1,3 +1,4 @@
+
 export interface Task {
   id: number;
   title: string;
@@ -6,6 +7,27 @@ export interface Task {
   priority: 'BAJA' | 'MEDIA' | 'ALTA';
   startDate?: Date;
   dueDate?: Date;
+  assignedUsers?: AssignedUsers[];
+}
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  age: number;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  contractDate: string | null;
+  status: boolean;
+  job_title: string;
+  phoneNumber: string;
+  address: string;
+}
+
+export interface AssignedUsers {
+  id: number;
+  assignedAt: string;
+  user: User;
 }
 
 export interface Column {
