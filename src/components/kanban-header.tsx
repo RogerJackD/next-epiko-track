@@ -14,14 +14,14 @@ interface KanbanHeaderProps {
   activeArea: Area;
   onBoardChange: (boardId: string) => void;
   currentBoardId: string | null;
+  onTaskCreated: () => void;
 }
 
-export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}: KanbanHeaderProps) {
+export default function KanbanHeader({activeArea, onBoardChange, currentBoardId, onTaskCreated}: KanbanHeaderProps) {
 
   const [boards, setBoards] = useState<Board[] | null>(null);
   
   const [openDialogTask, setOpenDialogTask] = useState(false);
-
 
   const handleBoardChange = (BoardId: string) => {
     console.log("boardId seleccionado:", BoardId);
@@ -83,7 +83,7 @@ export default function KanbanHeader({activeArea, onBoardChange, currentBoardId}
       </div>
 
       <div>
-        <TaskDialog open={openDialogTask} onOpenChange={setOpenDialogTask} currentBoardId={currentBoardId} />
+        <TaskDialog open={openDialogTask} onOpenChange={setOpenDialogTask} currentBoardId={currentBoardId}  onTaskCreated={onTaskCreated} />
       </div>
     </div>
   )

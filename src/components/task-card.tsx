@@ -11,7 +11,7 @@ import TaskDialog from './task-dialog'
 interface TaskCardProps {
   task: Task
   onDeleted: () => void
-  currentBoardId: string | null // 👈 NUEVO
+  currentBoardId: string | null 
 }
 
 const priorityColors = {
@@ -30,7 +30,7 @@ const formatDate = (date: Date | string | number) => {
 };
 
 export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardProps) {
-  const [openEditDialog, setOpenEditDialog] = useState(false); // 👈 NUEVO
+  const [openEditDialog, setOpenEditDialog] = useState(false); 
 
   const handleDelete = async (taskId: number) => {
     try {
@@ -125,8 +125,8 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
         currentBoardId={currentBoardId}
-        onTaskCreated={onDeleted} // Reusar el mismo callback
-        taskToEdit={task} // 👈 Pasar la tarea a editar
+        onTaskCreated={onDeleted} 
+        taskToEdit={task} 
       />
     </>
   )

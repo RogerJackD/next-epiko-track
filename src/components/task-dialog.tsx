@@ -33,14 +33,14 @@ interface User {
 }
 
 export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskCreated, taskToEdit }: TaskDialogProps) {
-  const { register, handleSubmit, setValue, reset } = useForm<TaskFormData>(); // 👈 Agregar reset
+  const { register, handleSubmit, setValue, reset } = useForm<TaskFormData>(); 
   const [users, setUsers] = useState<User[] | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
 
-  const isEditMode = !!taskToEdit; // 👈 Determinar modo
+  const isEditMode = !!taskToEdit; 
 
-  // 👈 NUEVO: Cargar datos al abrir en modo edición
+  
   useEffect(() => {
     if (open && taskToEdit) {
       // Formatear fechas de "YYYY-MM-DD HH:MM:SS" a "YYYY-MM-DD"
@@ -65,13 +65,13 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskC
         setSelectedUsers(assignedUsers);
       }
     } else if (!open) {
-      // Limpiar formulario al cerrar
+      
       reset();
       setSelectedUsers([]);
     }
   }, [open, taskToEdit, setValue, reset]);
 
-  const onSubmit = async (data: TaskFormData) => { // 👈 Agregar async
+  const onSubmit = async (data: TaskFormData) => { 
     const formatDateTime = (date: string, isStartDate: boolean = false) => {
       if (!date) return '';
       const time = isStartDate ? '00:00:00' : '23:59:59';
@@ -89,11 +89,9 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskC
 
     try {
       if (isEditMode) {
-        // 👈 Modo edición: PATCH
         await taskService.updateTask(taskToEdit!.id, payload);
         console.log("Tarea actualizada exitosamente");
       } else {
-        // Modo creación: POST
         await taskService.createTasksByBoard(currentBoardId!, payload);
         console.log("Tarea creada exitosamente");
       }
@@ -101,7 +99,7 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskC
       setSelectedUsers([]);
       reset();
       onOpenChange(false);
-      onTaskCreated(); // 👈 Refrescar el tablero
+      onTaskCreated(); 
     } catch (error) {
       console.error(`Error al ${isEditMode ? 'actualizar' : 'crear'} tarea:`, error);
     }
