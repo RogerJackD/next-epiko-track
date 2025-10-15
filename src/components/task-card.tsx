@@ -76,6 +76,24 @@ export default function TaskCard({task} : TaskCardProps) {
             </CardHeader>
             <CardContent className="pt-0 space-y-3">
                 <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>
+
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground">Asignado a</span>
+                  <div className="flex flex-wrap gap-1">
+                    {task.assignedUsers && task.assignedUsers.length > 0 ? (
+                      task.assignedUsers.map((assigned, idx) => (
+                        <span 
+                          key={idx} 
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
+                        >
+                          {assigned.user.firstName} {assigned.user.lastName}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-muted-foreground italic">Sin asignar</span>
+                    )}
+                  </div>
+                </div>
                 
 
                 {(task.startDate || task.dueDate) && (
