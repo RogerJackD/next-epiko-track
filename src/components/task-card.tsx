@@ -7,6 +7,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from './ui/button'
 import { taskService } from '@/services/task-service'
 import TaskDialog from './task-dialog'
+import { useDraggable } from '@dnd-kit/core' 
+import { CSS } from '@dnd-kit/utilities' 
 
 interface TaskCardProps {
   task: Task
@@ -30,7 +32,17 @@ const formatDate = (date: Date | string | number) => {
 };
 
 export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardProps) {
-  const [openEditDialog, setOpenEditDialog] = useState(false); 
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+
+  // 👈 NUEVO: Hook de draggable
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: task.id,
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : 1,
+  };
 
   const handleDelete = async (taskId: number) => {
     try {
@@ -44,15 +56,22 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
 
   return (
     <>
-      <Card className="bg-card group relative">
+      <Card 
+        ref={setNodeRef} 
+        style={style}
+        className={`bg-gray-50 group relative ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        {...attributes}
+        {...listeners}
+      >
         <div className='absolute top-2 right-2 group-hover:opacity-100 transition-opacity z-10'>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 hover:bg-muted"
+                className="h-6 w-6 p-0 hover:bg-muted cursor-pointer"
                 onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()} // 👈 Evita activar drag
               >
                 <MoreVertical className="h-3 w-3" />
               </Button>
@@ -70,7 +89,7 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
           </DropdownMenu>
         </div>
 
-        <div className="cursor-pointer">
+        <div>
           <CardHeader>
             <div className="flex items-start justify-between gap-2 pr-6">
               <h3 className="font-medium text-sm leading-tight text-card-foreground">{task.title}</h3>
@@ -120,7 +139,6 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
         </div>
       </Card>
 
-      {/* Dialog de edición */}
       <TaskDialog 
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
