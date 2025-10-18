@@ -8,11 +8,11 @@ descargar dependencias:
 ````
 npm install
 ````
-
-```ejecutar frontend
+ejecutar frontend
+```
 npm run dev
 
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+abrir: [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

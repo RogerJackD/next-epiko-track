@@ -34,7 +34,6 @@ const formatDate = (date: Date | string | number) => {
 export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardProps) {
   const [openEditDialog, setOpenEditDialog] = useState(false);
 
-  // 👈 NUEVO: Hook de draggable
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
   });
