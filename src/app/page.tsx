@@ -4,6 +4,7 @@ import AdminPanel from "@/components/admin-panel";
 import AppSidebar from "@/components/app-sidebar";
 import KanbanBoard from "@/components/kanban-board";
 import KanbanHeader from "@/components/kanban-header";
+import Notifications from "@/components/ui-notifications/notifications";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { areasData } from "@/data/area.data";
 import { useEffect, useState } from "react";
@@ -32,6 +33,14 @@ export default function Home() {
         <main className="flex-1 overflow-auto bg-muted/30 p-6">
           <AdminPanel />
         </main>
+      );
+    }
+
+    if (activeArea === "notifications") {
+      return (
+        <div className="flex-1 overflow-auto bg-muted/30 p-6">
+          <Notifications />
+        </div>
       );
     }
 
