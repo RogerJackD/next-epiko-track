@@ -83,8 +83,8 @@ export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) 
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton
-                                onClick={() => onAreaChange("notificaciones")}
-                                isActive={activeArea === "notificaciones"}
+                                onClick={() => onAreaChange("notifications")}
+                                isActive={activeArea === "notifications"}
                                 className="w-full justify-start"
                             >
                                 <Bell className="h-4 w-4" />
