@@ -1,30 +1,40 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { AlertCircle, Loader2 } from "lucide-react"
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const loginSchema = z.object({
+  email: z.string().email("Correo inválido"),
+  password: z.string().min(6, "Mínimo 6 caracteres"),
+})
+
+type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
   const router = useRouter()
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  })
 
+  const onSubmit = async (data: LoginFormData) => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(data),
       })
 
       if (!res.ok) {
@@ -32,8 +42,9 @@ export default function LoginPage() {
       }
 
       router.push("/dashboard")
-    } finally {
-      setLoading(false)
+    } catch (error) {
+      setError("root", { message: "Correo o contraseña incorrectos" })
+      console.log(error)
     }
   }
 
@@ -50,49 +61,53 @@ export default function LoginPage() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            {/* Email */}
             <div>
               <Label htmlFor="email" className="mb-2">Correo electrónico</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="tuemail@correo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                {...register("email")}
               />
+              {errors.email && (
+                <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+              )}
             </div>
 
+            {/* Password */}
             <div>
               <Label htmlFor="password" className="mb-2">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                {...register("password")}
               />
+              {errors.password && (
+                <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+              )}
             </div>
 
-            {error && (
+            {/* Error general */}
+            {errors.root && (
               <div className="flex items-center gap-2 text-sm text-red-500 mt-1">
                 <AlertCircle className="w-4 h-4" />
-                <span>{error}</span>
+                <span>{errors.root.message}</span>
               </div>
             )}
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-2"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : null}
-              Iniciar sesión
+            <Button type="submit" disabled={isSubmitting} className="w-full mt-2">
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Iniciando...
+                </>
+              ) : (
+                "Iniciar sesión"
+              )}
             </Button>
-
           </form>
         </CardContent>
       </Card>
