@@ -1,14 +1,12 @@
+import { Credentials, LoginResponse } from "@/types/loginResponse";
 
 const API_BASE_URL = 'http://localhost:3030/api';
 
-interface Credentials {
-    email: string,
-    password: string,
-}
+
 
 export const boardService = {
 
-    async sendCredentials(credentials: Credentials) {
+    async sendCredentials(credentials: Credentials): Promise<LoginResponse> {
             const response = await fetch(`${API_BASE_URL}/auth/login`,{
                 method: 'POST',
                 headers: {
@@ -32,3 +30,4 @@ export const boardService = {
             return await response.json()
         }
 }
+
