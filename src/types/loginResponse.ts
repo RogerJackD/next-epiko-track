@@ -3,3 +3,9 @@ export interface LoginResponse {
     password: string;
     token: string;
 }
+
+
+export interface Credentials {
+    email: string,
+    password: string,
+}
