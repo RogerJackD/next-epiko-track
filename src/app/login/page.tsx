@@ -9,11 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from "@/validators/login.validator"
 
-const loginSchema = z.object({
-  email: z.string().email("Correo inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
-})
+
 
 type LoginFormData = z.infer<typeof loginSchema>
 
