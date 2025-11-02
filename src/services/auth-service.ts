@@ -4,7 +4,7 @@ const API_BASE_URL = 'http://localhost:3030/api';
 
 
 
-export const boardService = {
+export const AuthService = {
 
     async sendCredentials(credentials: Credentials): Promise<LoginResponse> {
             const response = await fetch(`${API_BASE_URL}/auth/login`,{
