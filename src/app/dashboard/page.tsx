@@ -10,9 +10,12 @@ import { areasData } from "@/data/area.data";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { TokenService } from "@/services/auth/tokens";
 import AuthGuard from "@/components/auth/auth-guard";
 
 function DashboardContent() {
+  const router = useRouter()
   const [activeArea, setActiveArea] = useState("1");
   const [boardId, setBoardId] = useState<string | null>(null); 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -26,7 +29,10 @@ function DashboardContent() {
     console.log("boardId actual:", boardId);
   }, [boardId]);
 
-  
+  const handleLogout = () => {
+    TokenService.removeToken()
+    router.push('/login')
+  }
 
   const renderContent = () => {
     console.log("activeArea:", activeArea);
@@ -88,6 +94,7 @@ function DashboardContent() {
             <Button 
               variant="ghost" 
               size="sm" 
+              onClick={handleLogout}
               className="gap-2"
             >
               <LogOut className="h-4 w-4" />
