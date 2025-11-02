@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from "@/validators/login.validator"
+import { AuthService } from "@/services/auth-service"
 
 
 
@@ -29,15 +30,8 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-
-      if (!res.ok) {
-        throw new Error("Credenciales incorrectas")
-      }
+      const res = await AuthService.sendCredentials(data)
+      console.log(res)
 
       router.push("/dashboard")
     } catch (error) {
