@@ -8,22 +8,25 @@ import Notifications from "@/components/ui-notifications/notifications";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { areasData } from "@/data/area.data";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import AuthGuard from "@/components/auth/auth-guard";
 
-
-export default function Dashboard() {
-
+function DashboardContent() {
   const [activeArea, setActiveArea] = useState("1");
   const [boardId, setBoardId] = useState<string | null>(null); 
-  
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   // Resetear boardId cuando cambia el área
   useEffect(() => {
-    setBoardId(null); // Resetea el boardId al cambiar de area
+    setBoardId(null);
   }, [activeArea]);
 
   useEffect(() => {
     console.log("boardId actual:", boardId);
   }, [boardId]);
+
+  
 
   const renderContent = () => {
     console.log("activeArea:", activeArea);
@@ -80,12 +83,28 @@ export default function Dashboard() {
       <div className="flex h-screen w-full p-4">
         <AppSidebar activeArea={activeArea} onAreaChange={setActiveArea}/>
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex items-center gap-2 border-b px-4 py-2">
+          <div className="flex items-center justify-between border-b px-4 py-2">
             <SidebarTrigger />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Cerrar sesión
+            </Button>
           </div>
           {renderContent()}
         </div>
       </div>
     </SidebarProvider>
   );
+}
+
+export default function Dashboard() {
+  return (
+    <AuthGuard>
+      <DashboardContent />
+    </AuthGuard>
+  )
 }
