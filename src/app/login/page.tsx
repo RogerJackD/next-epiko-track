@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from "@/validators/login.validator"
-import { AuthService } from "@/services/auth-service"
+import { AuthService } from "@/services/auth/auth-service"
 
 
 
