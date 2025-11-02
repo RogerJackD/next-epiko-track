@@ -10,14 +10,21 @@ import { Label } from "@/components/ui/label"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from "@/validators/login.validator"
+import { useEffect } from "react"
+import { TokenService } from "@/services/auth/tokens"
 import { AuthService } from "@/services/auth/auth-service"
-
-
 
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
   const router = useRouter()
+
+  // Verificar si ya está autenticado al cargar dashboard
+  useEffect(() => {
+    if (TokenService.isAuthenticated()) {
+      router.replace("/dashboard")
+    }
+  }, [router])
 
   const {
     register,
@@ -31,12 +38,18 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     try {
       const res = await AuthService.sendCredentials(data)
-      console.log(res)
+      console.log('Login exitoso:', res)
 
-      router.push("/dashboard")
+      if (res.token) {
+        TokenService.setToken(res.token)
+        
+        router.push("/dashboard")
+      } else {
+        throw new Error('No se recibió token del servidor')
+      }
     } catch (error) {
       setError("root", { message: "Correo o contraseña incorrectos" })
-      console.log(error)
+      console.error('Error en login:', error)
     }
   }
 
