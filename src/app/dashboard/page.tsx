@@ -1,7 +1,6 @@
 'use client'
 
-import AdminPanel from "@/components/admin-panel";
-import AppSidebar from "@/components/app-sidebar";
+import AdminPanel from "@/components/ui-admin/admin-panel";
 import KanbanBoard from "@/components/kanban-board";
 import KanbanHeader from "@/components/kanban-header";
 import Notifications from "@/components/ui-notifications/notifications";
@@ -13,6 +12,7 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TokenService } from "@/services/auth/tokens";
 import AuthGuard from "@/components/auth/auth-guard";
+import AppSidebar from "@/components/app-sidebar";
 
 function DashboardContent() {
   const router = useRouter()
