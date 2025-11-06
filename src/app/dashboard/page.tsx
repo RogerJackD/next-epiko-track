@@ -1,6 +1,6 @@
 'use client'
 
-import AdminPanel from "@/components/ui-admin/admin-panel";
+import AdminPanel from "@/components/ui-user-managent/user-managent-panel";
 import KanbanBoard from "@/components/kanban-board";
 import KanbanHeader from "@/components/kanban-header";
 import Notifications from "@/components/ui-notifications/notifications";

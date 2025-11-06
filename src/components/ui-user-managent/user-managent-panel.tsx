@@ -3,8 +3,8 @@
 import { userService } from '@/services/user-service'
 import { User } from '@/types/user'
 import React, { useEffect, useState } from 'react'
-import UsersTable from './users-table'
-import AdminHeader from './admin-header'
+import UsersTable from './user-managent-table'
+import AdminHeader from './user-managent-header'
 
 export default function AdminPanel() {
   const [users, setUsers] = useState<User[]>([])
