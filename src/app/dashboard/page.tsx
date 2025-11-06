@@ -37,7 +37,7 @@ function DashboardContent() {
   const renderContent = () => {
     console.log("activeArea:", activeArea);
     
-    if (activeArea === "admin") {
+    if (activeArea === "userManagement") {
       return (
         <main className="flex-1 overflow-auto bg-muted/30 p-6">
           <AdminPanel />
