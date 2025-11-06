@@ -1,4 +1,4 @@
-import { Bell, Building2, Laptop, LogOut, Settings, TrendingUp, Users } from 'lucide-react'
+import { Bell, Building2, Laptop, LogOut, TableConfig, TrendingUp, UserCog, Users } from 'lucide-react'
 import React from 'react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from './ui/sidebar'
 import { Button } from './ui/button'
@@ -64,12 +64,22 @@ export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) 
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton
-                                onClick={() => onAreaChange("admin")}
-                                isActive={activeArea === "admin"}
+                                onClick={() => onAreaChange("userManagement")}
+                                isActive={activeArea === "userManagement"}
                                 className="w-full justify-start"
                             >
-                                <Settings className="h-4 w-4" />
-                                <span>Panel de Admin</span>
+                                <UserCog className="h-4 w-4" />
+                                <span>Gestión de Usuarios</span>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                onClick={() => onAreaChange("boardManagement")}
+                                isActive={activeArea === "boardManagement"}
+                                className="w-full justify-start"
+                            >
+                                <TableConfig className="h-4 w-4" />
+                                <span>Gestión de Tableros</span>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
