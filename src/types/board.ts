@@ -20,3 +20,15 @@ export interface Area {
   name: string;
   descripcion: string;
 }
+
+export interface CreateBoardDTO {
+  title: string;
+  description: string;
+  areaId: number;
+}
+
+export interface UpdateBoardDTO {
+  title?: string;
+  description?: string;
+  isActive?: boolean;
+}
