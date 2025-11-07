@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { TokenService } from "@/services/auth/tokens";
 import AuthGuard from "@/components/auth/auth-guard";
 import AppSidebar from "@/components/app-sidebar";
+import BoardManagementPanel from "@/components/ui-board-managent/board-managent-panel";
 
 function DashboardContent() {
   const router = useRouter()
@@ -41,6 +42,13 @@ function DashboardContent() {
       return (
         <main className="flex-1 overflow-auto bg-muted/30 p-6">
           <AdminPanel />
+        </main>
+      );
+    }
+    if (activeArea === "boardManagement") {
+      return (
+        <main className="flex-1 overflow-auto bg-muted/30 p-6">
+          <BoardManagementPanel />
         </main>
       );
     }
