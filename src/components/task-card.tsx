@@ -6,9 +6,10 @@ import { Calendar, Clock, Edit, MoreVertical, Trash2 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { Button } from './ui/button'
 import { taskService } from '@/services/task-service'
-import TaskDialog from './task-dialog'
+import EditTaskDialog from './edit-task-dialog'
 import { useDraggable } from '@dnd-kit/core' 
-import { CSS } from '@dnd-kit/utilities' 
+import { CSS } from '@dnd-kit/utilities'
+import { toast } from 'sonner'
 
 interface TaskCardProps {
   task: Task
@@ -47,9 +48,15 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
     try {
       const response = await taskService.deleteTask(taskId);
       console.log(response.message);
+      toast.success('Tarea eliminada', {
+        description: 'La tarea se ha eliminado correctamente'
+      })
       onDeleted();
     } catch (error) {
       console.error("Error al eliminar:", error);
+      toast.error('Error al eliminar', {
+        description: error instanceof Error ? error.message : 'Error desconocido'
+      })
     }
   }
 
@@ -70,7 +77,7 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
                 size="sm"
                 className="h-6 w-6 p-0 hover:bg-muted cursor-pointer"
                 onClick={(e) => e.stopPropagation()}
-                onPointerDown={(e) => e.stopPropagation()} // 👈 Evita activar drag
+                onPointerDown={(e) => e.stopPropagation()}
               >
                 <MoreVertical className="h-3 w-3" />
               </Button>
@@ -138,12 +145,11 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
         </div>
       </Card>
 
-      <TaskDialog 
+      <EditTaskDialog 
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
-        currentBoardId={currentBoardId}
-        onTaskCreated={onDeleted} 
-        taskToEdit={task} 
+        task={task}
+        onTaskUpdated={onDeleted}
       />
     </>
   )

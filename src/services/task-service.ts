@@ -6,8 +6,8 @@ const API_BASE_URL = 'http://localhost:3030/api';
 interface TaskFormData {
     title: string;
     description: string;
-    startDate: string;
-    dueDate: string;
+    startDate?: string;
+    dueDate?: string;
     priority: 'BAJA' | 'MEDIA' | 'ALTA';
     userIds? : string[];
 }
