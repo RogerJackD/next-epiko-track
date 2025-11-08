@@ -9,13 +9,23 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Mail, Phone, Briefcase, Calendar } from 'lucide-react'
+import { Mail, Phone, Briefcase, Calendar, MoreHorizontal, Edit, UserX, UserCheck } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface UsersTableProps {
   users?: User[]
+  onEdit?: (user: User) => void
+  onToggleStatus?: (user: User) => void
 }
 
-export default function UsersTable({ users }: UsersTableProps) {
+export default function UsersTable({ users, onEdit, onToggleStatus }: UsersTableProps) {
   return (
     <div className="w-full overflow-x-auto">
       <div className="rounded-lg border bg-card">
@@ -28,6 +38,7 @@ export default function UsersTable({ users }: UsersTableProps) {
               <TableHead className="font-semibold">Área</TableHead>
               <TableHead className="font-semibold">Rol</TableHead>
               <TableHead className="font-semibold text-center">Estado</TableHead>
+              <TableHead className="font-semibold text-center">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -105,19 +116,74 @@ export default function UsersTable({ users }: UsersTableProps) {
                 </TableCell>
                 
                 <TableCell className="text-center">
-                  <Badge 
-                    variant={user.status ? 'default' : 'destructive'}
-                    className={user.status ? 'bg-green-500 hover:bg-green-600' : ''}
-                  >
-                    {user.status ? 'Activo' : 'Inactivo'}
-                  </Badge>
+                  <div className="flex flex-col items-center gap-2">
+                    <Badge 
+                      variant={user.status ? 'default' : 'destructive'}
+                      className={user.status ? 'bg-green-500 hover:bg-green-600' : ''}
+                    >
+                      {user.status ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onToggleStatus?.(user)}
+                      className={user.status 
+                        ? 'text-red-600 hover:text-red-700 hover:bg-red-50' 
+                        : 'text-green-600 hover:text-green-700 hover:bg-green-50'}
+                    >
+                      {user.status ? (
+                        <>
+                          <UserX className="h-3.5 w-3.5 mr-1.5" />
+                          Desactivar
+                        </>
+                      ) : (
+                        <>
+                          <UserCheck className="h-3.5 w-3.5 mr-1.5" />
+                          Activar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </TableCell>
+                
+                <TableCell className="text-center">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEdit?.(user)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => onToggleStatus?.(user)}
+                        className={user.status ? 'text-red-600' : 'text-green-600'}
+                      >
+                        {user.status ? (
+                          <>
+                            <UserX className="h-4 w-4 mr-2" />
+                            Desactivar
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="h-4 w-4 mr-2" />
+                            Activar
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
             
             {(!users || users.length === 0) && (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                   No hay usuarios para mostrar
                 </TableCell>
               </TableRow>
