@@ -21,3 +21,30 @@ export interface User {
     descripcion: string;
   };
 }
+
+export interface CreateUserDTO {
+  firstName: string;
+  lastName: string;
+  age: number;
+  email: string;
+  contractDate?: string;
+  job_title: string;
+  address: string;
+  phoneNumber: string;
+  password: string;
+  areaId: number;
+}
+
+export interface UpdateUserDTO {
+  firstName?: string;
+  lastName?: string;
+  age?: number;
+  email?: string;
+  contractDate?: string | null;
+  job_title?: string;
+  address?: string;
+  phoneNumber?: string;
+  password?: string;
+  areaId?: number;
+  status?: boolean; 
+}
