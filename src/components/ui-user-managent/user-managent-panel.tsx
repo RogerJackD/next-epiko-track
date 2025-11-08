@@ -5,6 +5,9 @@ import { User } from '@/types/user'
 import React, { useEffect, useState } from 'react'
 import UsersTable from './user-managent-table'
 import AdminHeader from './user-managent-header'
+import CreateUserModal from './create-user-modal'
+import EditUserModal from './edit-user-modal'
+import { toast } from 'sonner'
 
 export default function AdminPanel() {
   const [users, setUsers] = useState<User[]>([])
@@ -12,15 +15,28 @@ export default function AdminPanel() {
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [areaFilter, setAreaFilter] = useState('all')
+  
+  // Modales
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
-  useEffect(() => {
-    const fetchUsers = async () => {
+  // Función para cargar usuarios
+  const fetchUsers = async () => {
+    try {
       const dataUser = await userService.getUsers()
       console.log(dataUser)
       setUsers(dataUser)
       setFilteredUsers(dataUser)
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      toast.error('Error al cargar usuarios', {
+        description: error instanceof Error ? error.message : 'Error desconocido'
+      })
     }
+  }
 
+  useEffect(() => {
     fetchUsers()
   }, [])
 
@@ -66,11 +82,51 @@ export default function AdminPanel() {
   }
 
   const handleAddUser = () => {
-    console.log('Agregar nuevo usuario')
+    setIsCreateModalOpen(true)
+  }
+
+  const handleUserCreated = () => {
+    fetchUsers()
+  }
+
+  const handleEdit = (user: User) => {
+    setSelectedUser(user)
+    setIsEditModalOpen(true)
+  }
+
+  const handleUserUpdated = () => {
+    fetchUsers()
+  }
+
+  const handleToggleStatus = async (user: User) => {
+    try {
+      await userService.updateUser(
+        { status: !user.status },
+        user.id
+      )
+
+      toast.success(
+        !user.status ? '¡Usuario activado!' : '¡Usuario desactivado!',
+        {
+          description: !user.status 
+            ? `${user.firstName} ${user.lastName} ha sido activado` 
+            : `${user.firstName} ${user.lastName} ha sido desactivado`
+        }
+      )
+
+      fetchUsers()
+    } catch (error) {
+      toast.error('Error al cambiar el estado', {
+        description: error instanceof Error ? error.message : 'Error desconocido'
+      })
+    }
   }
 
   const handleExport = () => {
     console.log('Exportar usuarios')
+    toast.info('Función de exportación', {
+      description: 'Esta funcionalidad estará disponible próximamente'
+    })
   }
 
   return (
@@ -85,9 +141,28 @@ export default function AdminPanel() {
             onExport={handleExport}
             totalUsers={filteredUsers.length}
           />
-          <UsersTable users={filteredUsers} />
+          <UsersTable 
+            users={filteredUsers}
+            onEdit={handleEdit}
+            onToggleStatus={handleToggleStatus}
+          />
         </div>
       </div>
+
+      {/* Modal de creación */}
+      <CreateUserModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSuccess={handleUserCreated}
+      />
+
+      {/* Modal de edición */}
+      <EditUserModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        onSuccess={handleUserUpdated}
+        user={selectedUser}
+      />
     </div>
   )
 }
