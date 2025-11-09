@@ -1,12 +1,10 @@
 import { NotificationTaskResponse } from "@/types/notificationsResponse";
 
-const API_BASE_URL = 'http://localhost:3030/api';
-
 
 export const notificationService = {
 
     async getNotificationsTasks(): Promise<NotificationTaskResponse[]> {
-            const response = await fetch(`${API_BASE_URL}/boards/tasks/upcoming/due-date`,{
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/boards/tasks/upcoming/due-date`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',

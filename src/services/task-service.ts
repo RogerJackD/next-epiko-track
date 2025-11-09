@@ -1,8 +1,5 @@
 import { Board } from "@/types/board";
 
-
-const API_BASE_URL = 'http://localhost:3030/api';
-
 interface TaskFormData {
     title: string;
     description: string;
@@ -16,7 +13,7 @@ export const taskService = {
 
     async createTasksByBoard(idBoard: string, data: TaskFormData): Promise<Board[]> {
         
-            const response = await fetch(`${API_BASE_URL}/boards/${idBoard}/tasks`,{
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/boards/${idBoard}/tasks`,{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -39,7 +36,7 @@ export const taskService = {
             return await response.json()
         },
     async deleteTask(idTask: number): Promise<{message: string}> {
-        const response = await fetch(`${API_BASE_URL}/boards/tasks/${idTask}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/boards/tasks/${idTask}`, {
             method: 'DELETE',
         })
 
@@ -59,7 +56,7 @@ export const taskService = {
     },
 
     async updateTask(idTask: number, taskData: Partial<TaskFormData>): Promise<{message: string}> {
-    const response = await fetch(`${API_BASE_URL}/boards/tasks/${idTask}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/boards/tasks/${idTask}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -84,7 +81,7 @@ export const taskService = {
 
     async updateTaskStatus(idTask: number, taskStatusId: number): Promise<{message: string}> {
         
-    const response = await fetch(`${API_BASE_URL}/boards/tasks/${idTask}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/boards/tasks/${idTask}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',

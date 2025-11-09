@@ -1,12 +1,9 @@
 import { CreateUserDTO, UpdateUserDTO, User } from "@/types/user";
 
-const API_BASE_URL = 'http://localhost:3030/api';
-
-
 export const userService = {
 
     async getUsers(): Promise<User[]> {
-            const response = await fetch(`${API_BASE_URL}/auth/users`,{
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/users`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -29,7 +26,7 @@ export const userService = {
     },
 
     async createUser(createUserData: CreateUserDTO) {
-        const response = await fetch(`${API_BASE_URL}/auth/users`,{
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/users`,{
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -49,7 +46,7 @@ export const userService = {
         return await response.json()
     },
     async updateUser(updateUserData: UpdateUserDTO, userId : string) {
-        const response = await fetch(`${API_BASE_URL}/auth/users/${userId}`,{
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/users/${userId}`,{
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',

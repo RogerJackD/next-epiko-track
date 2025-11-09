@@ -1,13 +1,10 @@
 import { KanbanBoardResponse } from '../types/kanbanResponse';
 
 
-const API_BASE_URL = 'http://localhost:3030/api';
-
-
 export const kanbanService = {
 
     async getKanbanBoardById(idBoard: string): Promise<KanbanBoardResponse> {
-            const response = await fetch(`${API_BASE_URL}/boards/${idBoard}/tasks`,{
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/boards/${idBoard}/tasks`,{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
