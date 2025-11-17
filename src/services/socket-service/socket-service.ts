@@ -4,7 +4,7 @@ import { SocketError, TaskCreatedEvent, TaskDeletedEvent, TaskUpdatedEvent } fro
 
 class SocketService {
   private socket: Socket | null = null;
-  private readonly SOCKET_URL = 'http://localhost:3030';
+  private readonly SOCKET_URL = process.env.NEXT_PUBLIC_API_BASE_URL_SOCKET;
   private isConnecting = false;
 
   connect(): Socket {
