@@ -8,6 +8,9 @@ import { useAuth } from '@/hooks/useAuth'
 import { Badge } from './ui/badge'
 import { Skeleton } from './ui/skeleton'
 import { useUserTasksContext } from '@/contexts/UserTasksContext'
+import { PermissionGuard } from './auth/permission-guard'
+import { Permission } from '@/types/permissions'
+
 const areas = [
   {
     title: "Tecnología",
@@ -39,7 +42,6 @@ interface AppSidebarProps {
 export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) {
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
-  //const { taskCount, isConnected } = useUserTasks()
   const { taskCount, isConnected } = useUserTasksContext()
 
   const handleLogout = () => {
@@ -51,6 +53,8 @@ export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) 
     switch (roleName.toLowerCase()) {
       case 'admin':
         return 'bg-red-100 text-red-800 border-red-200'
+      case 'manager':
+        return 'bg-purple-100 text-purple-800 border-purple-200'
       case 'user':
         return 'bg-blue-100 text-blue-800 border-blue-200'
       default:
@@ -85,48 +89,56 @@ export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) 
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className='text-lg font-semibold'>Administracion</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => onAreaChange("userManagement")}
-                  isActive={activeArea === "userManagement"}
-                  className="w-full justify-start"
-                >
-                  <UserCog className="h-4 w-4" />
-                  <span>Gestión de Usuarios</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => onAreaChange("boardManagement")}
-                  isActive={activeArea === "boardManagement"}
-                  className="w-full justify-start"
-                >
-                  <TableConfig className="h-4 w-4" />
-                  <span>Gestión de Tableros</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => onAreaChange("notifications")}
-                  isActive={activeArea === "notifications"}
-                  className="w-full justify-start"
-                >
-                  <Bell className="h-4 w-4" />
-                  <span>Panel de Notificaciones</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/*ección de Administracinn solo visible para quienes tienen permiso */}
+        <PermissionGuard permission={Permission.VIEW_ADMIN_PANEL}>
+          <SidebarGroup>
+            <SidebarGroupLabel className='text-lg font-semibold'>Administración</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <PermissionGuard permission={Permission.MANAGE_USERS}>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => onAreaChange("userManagement")}
+                      isActive={activeArea === "userManagement"}
+                      className="w-full justify-start"
+                    >
+                      <UserCog className="h-4 w-4" />
+                      <span>Gestión de Usuarios</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </PermissionGuard>
+
+                <PermissionGuard permission={Permission.MANAGE_BOARDS}>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => onAreaChange("boardManagement")}
+                      isActive={activeArea === "boardManagement"}
+                      className="w-full justify-start"
+                    >
+                      <TableConfig className="h-4 w-4" />
+                      <span>Gestión de Tableros</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </PermissionGuard>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => onAreaChange("notifications")}
+                    isActive={activeArea === "notifications"}
+                    className="w-full justify-start"
+                  >
+                    <Bell className="h-4 w-4" />
+                    <span>Panel de Notificaciones</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </PermissionGuard>
 
         <SidebarGroup>
           <SidebarGroupLabel className='text-lg font-semibold'>
             Mis Tareas
-            {/* Indicador de conexión */}
             {isConnected && (
               <span className="ml-2 inline-flex h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             )}
@@ -143,7 +155,6 @@ export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) 
                     <CheckSquare className="h-4 w-4" />
                     <span>Mis Tareas</span>
                   </div>
-                  {/* Contador de tareas */}
                   {taskCount > 0 && (
                     <Badge 
                       variant="default" 
