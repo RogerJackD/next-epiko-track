@@ -14,6 +14,7 @@ import { TokenService } from "@/services/auth/tokens";
 import AuthGuard from "@/components/auth/auth-guard";
 import AppSidebar from "@/components/app-sidebar";
 import BoardManagementPanel from "@/components/ui-board-managent/board-managent-panel";
+import TasksUserPanel from "@/components/ui-tasks-user/taks-user.panel";
 
 function DashboardContent() {
   const router = useRouter()
@@ -57,6 +58,14 @@ function DashboardContent() {
       return (
         <div className="flex-1 overflow-auto bg-muted/30 p-6">
           <Notifications />
+        </div>
+      );
+    }
+
+    if (activeArea === "myTasks") {
+      return (
+        <div className="flex-1 overflow-auto bg-muted/30 p-6">
+          <TasksUserPanel />
         </div>
       );
     }
@@ -106,7 +115,7 @@ function DashboardContent() {
               className="gap-2"
             >
               <LogOut className="h-4 w-4" />
-              Cerrar sesión
+              Cerrar sesiónn
             </Button>
           </div>
           {renderContent()}
