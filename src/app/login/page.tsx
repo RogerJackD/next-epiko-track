@@ -19,7 +19,6 @@ type LoginFormData = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const router = useRouter()
 
-  // Verificar si ya está autenticado al cargar dashboard
   useEffect(() => {
     if (TokenService.isAuthenticated()) {
       router.replace("/dashboard")
@@ -41,7 +40,18 @@ export default function LoginPage() {
       console.log('Login exitoso:', res)
 
       if (res.token) {
+        // Guardar token
         TokenService.setToken(res.token)
+        
+        // Guardar datos del usuario (sin el token)
+        TokenService.setUserData({
+          id: res.id,
+          firstName: res.firstName,
+          lastName: res.lastName,
+          email: res.email,
+          role: res.role,
+          area: res.area
+        })
         
         router.push("/dashboard")
       } else {
@@ -67,7 +77,6 @@ export default function LoginPage() {
 
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            {/* Email */}
             <div>
               <Label htmlFor="email" className="mb-2">Correo electrónico</Label>
               <Input
@@ -81,7 +90,6 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Password */}
             <div>
               <Label htmlFor="password" className="mb-2">Contraseña</Label>
               <Input
@@ -95,7 +103,6 @@ export default function LoginPage() {
               )}
             </div>
 
-            {/* Error general */}
             {errors.root && (
               <div className="flex items-center gap-2 text-sm text-red-500 mt-1">
                 <AlertCircle className="w-4 h-4" />
