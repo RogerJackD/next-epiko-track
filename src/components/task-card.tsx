@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardHeader } from './ui/card'
 import { Task } from '@/types/kanbanResponse'
 import { Badge } from './ui/badge'
-import { Calendar, Clock, Edit, MoreVertical, Trash2 } from 'lucide-react'
+import { Calendar, Clock, Edit, MoreVertical, Trash2, Lock } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { Button } from './ui/button'
 import { taskService } from '@/services/task-service'
@@ -10,6 +10,17 @@ import EditTaskDialog from './edit-task-dialog'
 import { useDraggable } from '@dnd-kit/core' 
 import { CSS } from '@dnd-kit/utilities'
 import { toast } from 'sonner'
+import { usePermissions } from '@/hooks/usePermissions'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface TaskCardProps {
   task: Task
@@ -32,8 +43,19 @@ const formatDate = (date: Date | string | number) => {
   });
 };
 
-export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardProps) {
+export default function TaskCard({task, onDeleted} : TaskCardProps) {
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  
+  // Hook de permisos
+  const { canEditTask, canDeleteTask } = usePermissions();
+  
+  // Obtener IDs de usuarios asignados
+  const taskUserIds = task.assignedUsers?.map(au => au.user.id) || [];
+  
+  // Verificar permisos
+  const hasEditPermission = canEditTask(taskUserIds);
+  const hasDeletePermission = canDeleteTask(taskUserIds);
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: task.id,
@@ -44,9 +66,9 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const handleDelete = async (taskId: number) => {
+  const handleDelete = async () => {
     try {
-      const response = await taskService.deleteTask(taskId);
+      const response = await taskService.deleteTask(task.id);
       console.log(response.message);
       toast.success('Tarea eliminada', {
         description: 'La tarea se ha eliminado correctamente'
@@ -58,6 +80,54 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
         description: error instanceof Error ? error.message : 'Error desconocido'
       })
     }
+  }
+
+  const handleEditClick = () => {
+    if (!hasEditPermission) {
+      toast.error(
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+            <Lock className="h-5 w-5 text-red-600" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm">Acceso denegado</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              No tienes permiso para editar esta tarea
+            </p>
+          </div>
+        </div>,
+        {
+          duration: 3000,
+          className: 'bg-white border-l-4 border-l-red-500',
+        }
+      );
+      return;
+    }
+    setOpenEditDialog(true);
+  }
+
+  const handleDeleteClick = () => {
+    if (!hasDeletePermission) {
+      toast.error(
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+            <Lock className="h-5 w-5 text-red-600" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm">Acceso denegado</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              No tienes permiso para eliminar esta tarea
+            </p>
+          </div>
+        </div>,
+        {
+          duration: 3000,
+          className: 'bg-white border-l-4 border-l-red-500',
+        }
+      );
+      return;
+    }
+    setOpenDeleteDialog(true);
   }
 
   return (
@@ -83,13 +153,23 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setOpenEditDialog(true)}>
+              <DropdownMenuItem 
+                onClick={handleEditClick}
+                disabled={!hasEditPermission}
+                className={!hasEditPermission ? 'opacity-50 cursor-not-allowed' : ''}
+              >
                 <Edit className="h-3 w-3 mr-2" />
                 Editar
+                {!hasEditPermission && <Lock className="h-3 w-3 ml-auto" />}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDelete(task.id)} className="text-destructive">
+              <DropdownMenuItem 
+                onClick={handleDeleteClick}
+                disabled={!hasDeletePermission}
+                className={`${!hasDeletePermission ? 'opacity-50 cursor-not-allowed' : 'text-destructive'}`}
+              >
                 <Trash2 className="h-3 w-3 mr-2" />
                 Eliminar
+                {!hasDeletePermission && <Lock className="h-3 w-3 ml-auto" />}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -145,12 +225,35 @@ export default function TaskCard({task, onDeleted, currentBoardId} : TaskCardPro
         </div>
       </Card>
 
+      {/* Modal de edición */}
       <EditTaskDialog 
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
         task={task}
         onTaskUpdated={onDeleted}
       />
+
+      {/*Modal de confirmación de eliminación */}
+      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente la tarea <strong>{task.title}</strong>.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

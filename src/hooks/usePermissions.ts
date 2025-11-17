@@ -1,0 +1,85 @@
+// hooks/usePermissions.ts
+import { useMemo } from 'react';
+import { useAuth } from './useAuth';
+import { Permission, ROLE_PERMISSIONS, UserRole } from '@/types/permissions';
+
+export function usePermissions() {
+  const { user } = useAuth();
+
+  const userPermissions = useMemo(() => {
+    if (!user?.role?.name) return [];
+    
+    const roleName = user.role.name.toLowerCase() as UserRole;
+    return ROLE_PERMISSIONS[roleName] || [];
+  }, [user?.role?.name]);
+
+  const hasPermission = (permission: Permission): boolean => {
+    return userPermissions.includes(permission);
+  };
+
+  const hasAnyPermission = (permissions: Permission[]): boolean => {
+    return permissions.some(permission => userPermissions.includes(permission));
+  };
+
+  const hasAllPermissions = (permissions: Permission[]): boolean => {
+    return permissions.every(permission => userPermissions.includes(permission));
+  };
+
+  // Verificar si el usuario es dueño de una tarea
+  const isTaskOwner = (taskUsersIds: string[]): boolean => {
+    if (!user?.id) return false;
+    return taskUsersIds.includes(user.id);
+  };
+
+  // Verificar si puede mover una tarea específica
+  const canMoveTask = (taskUsersIds: string[]): boolean => {
+    // Si tiene permiso para mover cualquier tarea
+    if (hasPermission(Permission.MOVE_ANY_TASK)) {
+      return true;
+    }
+    
+    // Si tiene permiso para mover sus propias tareas y es dueño
+    if (hasPermission(Permission.MOVE_OWN_TASK) && isTaskOwner(taskUsersIds)) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Verificar si puede editar una tarea específica
+  const canEditTask = (taskUsersIds: string[]): boolean => {
+    if (hasPermission(Permission.EDIT_ANY_TASK)) {
+      return true;
+    }
+    
+    if (hasPermission(Permission.EDIT_OWN_TASK) && isTaskOwner(taskUsersIds)) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Verificar si puede eliminar una tarea específica
+  const canDeleteTask = (taskUsersIds: string[]): boolean => {
+    if (hasPermission(Permission.DELETE_ANY_TASK)) {
+      return true;
+    }
+    
+    if (hasPermission(Permission.DELETE_OWN_TASK) && isTaskOwner(taskUsersIds)) {
+      return true;
+    }
+    
+    return false;
+  };
+
+  return {
+    permissions: userPermissions,
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    isTaskOwner,
+    canMoveTask,
+    canEditTask,
+    canDeleteTask,
+  };
+}

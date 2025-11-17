@@ -9,22 +9,41 @@ interface KanbanColumnProps {
   title: string
   status: string
   tasks?: Task[]
+  totalTasks?: number  // ✅ Agregado
   onTaskDeleted: () => void
   currentBoardId: string | null
 }
 
-export default function KanbanColumn({id, title, tasks, onTaskDeleted, currentBoardId}: KanbanColumnProps) {
+export default function KanbanColumn({
+  id, 
+  title, 
+  tasks, 
+  totalTasks,  // ✅ Agregado
+  onTaskDeleted, 
+  currentBoardId
+}: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
-    id: id, // ID de la columna para droppable
+    id: id,
   });
+
+  const filteredCount = tasks?.length || 0;
+  const total = totalTasks || filteredCount;
+  const isFiltered = filteredCount !== total;
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4 p-3 rounded-lg border bg-muted/50">
         <h2 className="font-semibold text-foreground">{title}</h2>
-        <Badge className="text-xs bg-green-700">
-          {tasks ? tasks.length : 0}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge className="text-xs bg-green-700">
+            {filteredCount}
+          </Badge>
+          {isFiltered && (
+            <span className="text-xs text-muted-foreground">
+              de {total}
+            </span>
+          )}
+        </div>
       </div>
 
       <div 
@@ -44,7 +63,7 @@ export default function KanbanColumn({id, title, tasks, onTaskDeleted, currentBo
           ))
         ) : (
           <p className="text-muted-foreground text-center py-8">
-            {isOver ? 'Suelta aquí' : 'No hay tareas'}
+            {isOver ? 'Suelta aquí' : isFiltered ? 'Sin tareas que coincidan' : 'No hay tareas'}
           </p>
         )}
       </div>
