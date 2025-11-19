@@ -47,7 +47,7 @@ export default function KanbanHeader({
     assignedToMe: false,
   });
 
-  // ✅ Usar ref para evitar llamar onBoardChange en cada render
+  //Usar ref para evitar llamar onBoardChange en cada render
   const isFirstLoad = useRef(true);
   const prevAreaId = useRef<string | null>(null);
 
@@ -77,7 +77,7 @@ export default function KanbanHeader({
     filters.priority !== 'ALL' || 
     filters.assignedToMe;
 
-  // ✅ Separar la carga de boards de la selección automática
+  //Separar la carga de boards de la selección automática
   useEffect(() => {
     const fetchBoardsByArea = async() => {
       try {
@@ -90,20 +90,24 @@ export default function KanbanHeader({
     }
 
     fetchBoardsByArea();
-  }, [activeArea.id]); // ✅ Solo depende de activeArea.id
+  }, [activeArea.id]); 
 
-  // ✅ Seleccionar el primer board solo cuando cambien los boards o el área
-  useEffect(() => {
-    // Solo seleccionar automáticamente en la primera carga o cuando cambia el área
-    const areaChanged = prevAreaId.current !== activeArea.id;
-    
-    if (boards && boards.length > 0 && (isFirstLoad.current || areaChanged)) {
-      console.log("Seleccionando primer board automáticamente");
-      onBoardChange(boards[0].id);
-      isFirstLoad.current = false;
-      prevAreaId.current = activeArea.id;
-    }
-  }, [boards, activeArea.id]); // ✅ No incluir onBoardChange aquí
+  // Seleccionar el primer board solo cuando cambien los boards o el área
+    useEffect(() => {
+      // Solo seleccionar automáticamente en la primera carga o cuando cambia el área
+      const areaChanged = prevAreaId.current !== activeArea.id;
+      
+      // NO seleccionar automáticamente si ya hay un boardId (viene de navegación)
+      if (boards && boards.length > 0 && (isFirstLoad.current || areaChanged) && !currentBoardId) {
+        console.log("Seleccionando primer board automáticamente");
+        onBoardChange(boards[0].id);
+        isFirstLoad.current = false;
+        prevAreaId.current = activeArea.id;
+      } else if (areaChanged) {
+        // Si cambió el área pero ya hay un boardId, solo actualizar el ref
+        prevAreaId.current = activeArea.id;
+      }
+    }, [boards, activeArea.id, currentBoardId]); // ✅ Agregar currentBoardId como dependencia
 
   return (
     <div className="border-b bg-background px-4 md:px-6 py-4 space-y-4">
