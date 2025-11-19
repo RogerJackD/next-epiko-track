@@ -155,9 +155,12 @@ export default function BoardManagementTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onView?.(board)}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Ver Tablero
+                      <DropdownMenuItem onClick={() => {
+                          console.log('🔵 [Table] Click en Ver Tablero, board:', board);
+                          onView?.(board);
+                        }}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver Tablero
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onEdit?.(board)}>
                         <Edit className="h-4 w-4 mr-2" />

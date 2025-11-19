@@ -117,7 +117,7 @@ export default function KanbanBoard({
       return { total, completed };
     }, [kanbanData, filterTasks]);
 
-    // ✅ Solo llamar onProgressChange cuando realmente cambió el progreso
+    //Solo llamar onProgressChange cuando realmente cambió el progreso
     useEffect(() => {
       const { total, completed } = progress;
       const prev = prevProgressRef.current;
@@ -127,7 +127,7 @@ export default function KanbanBoard({
         prevProgressRef.current = { total, completed };
         onProgressChange?.(total, completed);
       }
-    }, [progress.total, progress.completed]); // ✅ Dependencias específicas, no onProgressChange
+    }, [progress.total, progress.completed]);
 
     const fetchKanbanData = useCallback(async () => {
         setIsLoading(true);
