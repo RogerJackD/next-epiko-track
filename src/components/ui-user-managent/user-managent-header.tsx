@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, UserPlus, Filter, Download } from 'lucide-react'
+import { Search, UserPlus, Filter } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -24,7 +24,6 @@ export default function AdminHeader({
   onFilterRole,
   onFilterArea,
   onAddUser,
-  onExport,
   totalUsers = 0
 }: AdminHeaderProps) {
   return (
@@ -38,10 +37,6 @@ export default function AdminHeader({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
           <Button size="sm" onClick={onAddUser}>
             <UserPlus className="h-4 w-4 mr-2" />
             Nuevo Usuario

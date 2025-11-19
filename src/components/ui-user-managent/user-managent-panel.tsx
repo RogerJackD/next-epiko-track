@@ -24,7 +24,7 @@ export default function AdminPanel() {
   // Función para cargar usuarios
   const fetchUsers = async () => {
     try {
-      const dataUser = await userService.getUsers()
+      const dataUser = await userService.getAllUsers()
       console.log(dataUser)
       setUsers(dataUser)
       setFilteredUsers(dataUser)
@@ -122,12 +122,6 @@ export default function AdminPanel() {
     }
   }
 
-  const handleExport = () => {
-    console.log('Exportar usuarios')
-    toast.info('Función de exportación', {
-      description: 'Esta funcionalidad estará disponible próximamente'
-    })
-  }
 
   return (
     <div className='p-6 bg-background min-h-screen'>
@@ -138,7 +132,6 @@ export default function AdminPanel() {
             onFilterRole={handleFilterRole}
             onFilterArea={handleFilterArea}
             onAddUser={handleAddUser}
-            onExport={handleExport}
             totalUsers={filteredUsers.length}
           />
           <UsersTable 
