@@ -1,6 +1,22 @@
+// services/socket-service.ts
 import { io, Socket } from 'socket.io-client';
 import { UserTasksResponse } from '@/types/task-socket';
-import { SocketError, TaskCreatedEvent, TaskDeletedEvent, TaskUpdatedEvent } from '@/types/socket-events';
+import { 
+  SocketError, 
+  TaskCreatedEvent, 
+  TaskDeletedEvent, 
+  TaskUpdatedEvent 
+} from '@/types/socket-events';
+import { KanbanBoardResponse } from '@/types/kanbanResponse';
+
+// ✨ Nuevo tipo para el evento de actualización del tablero
+interface BoardUpdatedEvent {
+  boardId: number;
+  board_id: number;
+  board_name: string;
+  columns: any;
+  timestamp: string;
+}
 
 class SocketService {
   private socket: Socket | null = null;
@@ -8,47 +24,47 @@ class SocketService {
   private isConnecting = false;
 
   connect(): Socket {
-  // Evitar múltiples conexiones
-  if (this.socket?.connected) {
+    // Evitar múltiples conexiones
+    if (this.socket?.connected) {
+      return this.socket;
+    }
+
+    if (this.isConnecting && this.socket) {
+      console.log('🔄 Conexión en proceso...');
+      return this.socket;
+    }
+
+    this.isConnecting = true;
+
+    // Siempre crear un socket si no existe
+    if (!this.socket) {
+      console.log('🚀 Creando nueva conexión WebSocket...');
+      this.socket = io(this.SOCKET_URL, {
+        transports: ['websocket'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        autoConnect: true,
+      });
+
+      this.socket.on('connect', () => {
+        console.log('✅ Socket conectado:', this.socket?.id);
+        this.isConnecting = false;
+      });
+
+      this.socket.on('disconnect', (reason) => {
+        console.log('❌ Socket desconectado. Razón:', reason);
+        this.isConnecting = false;
+      });
+
+      this.socket.on('connect_error', (error) => {
+        console.error('❌ Error de conexión:', error.message);
+        this.isConnecting = false;
+      });
+    }
+
     return this.socket;
   }
-
-  if (this.isConnecting && this.socket) {
-    console.log('conexion en proceso...');
-    return this.socket;
-  }
-
-  this.isConnecting = true;
-
-  // Siempre crear un socket si no existe
-  if (!this.socket) {
-    console.log('Creando nueva conexion WebSocket...');
-    this.socket = io(this.SOCKET_URL, {
-      transports: ['websocket'],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      autoConnect: true,
-    });
-
-    this.socket.on('connect', () => {
-      console.log('✅ Socket conectado:', this.socket?.id);
-      this.isConnecting = false;
-    });
-
-    this.socket.on('disconnect', (reason) => {
-      console.log('❌ Socket desconectado. Razón:', reason);
-      this.isConnecting = false;
-    });
-
-    this.socket.on('connect_error', (error) => {
-      console.error('❌ Error de conexión:', error.message);
-      this.isConnecting = false;
-    });
-  }
-
-  return this.socket;
-}
 
   disconnect() {
     if (this.socket) {
@@ -59,19 +75,90 @@ class SocketService {
     }
   }
 
+  // ============================================
+  // 🎯 MÉTODOS PARA TABLERO KANBAN (NUEVOS)
+  // ============================================
+
+  /**
+   * ✨ NUEVO: Suscribirse a un tablero específico
+   * Recibe datos iniciales y escucha actualizaciones en tiempo real
+   */
+  subscribeToBoard(
+    boardId: number,
+    userId: string,
+    onBoardData: (data: KanbanBoardResponse) => void,
+    onBoardUpdate: (data: BoardUpdatedEvent) => void
+  ) {
+    if (!this.socket?.connected) {
+      console.warn('⚠️ Socket no conectado, conectando...');
+      this.connect();
+    }
+
+    // Limpiar listeners anteriores
+    this.socket?.off('board-data');
+    this.socket?.off('board-updated');
+
+    console.log(`📤 Emitiendo suscripción al tablero ${boardId} con userId ${userId}`);
+
+    // Emitir suscripción
+    this.socket?.emit('subscribe-board', { boardId, userId });
+
+    // Escuchar datos iniciales
+    this.socket?.on('board-data', (data) => {
+      console.log('📥 Evento board-data recibido:', data);
+      
+      if (!data) {
+        console.error('❌ Datos iniciales son undefined o null');
+        return;
+      }
+      
+      // Si viene envuelto en un objeto response
+      const boardData = data.data || data;
+      
+      console.log('✅ Procesando datos del tablero:', boardData);
+      onBoardData(boardData);
+    });
+
+    // Escuchar actualizaciones en tiempo real
+    this.socket?.on('board-updated', (data) => {
+      console.log('🔄 Actualización del tablero recibida:', data);
+      
+      if (!data) {
+        console.error('❌ Datos de actualización son undefined o null');
+        return;
+      }
+      
+      onBoardUpdate(data);
+    });
+
+    console.log(`✅ Suscrito al tablero ${boardId}`);
+  }
+
+  /**
+   * ✨ NUEVO: Desuscribirse de un tablero
+   */
+  unsubscribeFromBoard(boardId: number) {
+    if (!this.socket?.connected) return;
+
+    this.socket?.emit('unsubscribe-board', { boardId });
+    this.socket?.off('board-data');
+    this.socket?.off('board-updated');
+
+    console.log(`❌ Desuscrito del tablero ${boardId}`);
+  }
+
+  // ============================================
+  // 📬 MÉTODOS PARA NOTIFICACIONES DE USUARIO (MANTENER)
+  // ============================================
+
   getUserTasks(userId: string, callback: (data: UserTasksResponse) => void) {
     if (!this.socket?.connected) {
       console.warn('⚠️ Socket no conectado, conectando...');
       this.connect();
     }
 
-    // Remover listener anterior si existe
     this.socket?.off('user-tasks');
-
-    // Emitir evento
     this.socket?.emit('get-user-tasks', { userId });
-
-    // Escuchar respuesta
     this.socket?.once('user-tasks', callback);
   }
 
@@ -81,18 +168,13 @@ class SocketService {
       this.connect();
     }
 
-    // Remover listener anterior si existe
     this.socket?.off('user-tasks');
-
-    // Suscribirse
     this.socket?.emit('subscribe-user-tasks', { userId });
-
-    // Escuchar respuesta y actualizaciones
     this.socket?.on('user-tasks', callback);
   }
 
   onTaskCreated(callback: (data: TaskCreatedEvent) => void) {
-    this.socket?.off('task-created'); // Limpiar listener anterior
+    this.socket?.off('task-created');
     this.socket?.on('task-created', callback);
   }
 
