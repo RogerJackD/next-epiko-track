@@ -32,32 +32,21 @@ function DashboardContent() {
   useEffect(() => {
     if (user?.area?.id) {
       setActiveArea(user.area.id.toString());
-      console.log("Área inicial del usuario:", user.area.id);
+      console.log("🏠 Área inicial del usuario:", user.area.id);
     }
   }, [user?.area?.id]);
 
-  // Log cada vez que cambian activeArea o boardId
-  useEffect(() => {
-    console.log('📊 [Estado] activeArea:', activeArea, '| boardId:', boardId);
-  }, [activeArea, boardId]);
-
   const handleNavigateToBoard = useCallback((board: Project) => {
-    console.log('🔴 [Dashboard] handleNavigateToBoard EJECUTADO');
-    console.log('🔴 [Dashboard] Board recibido:', board);
-    console.log('🔴 [Dashboard] Board ID:', board.id, 'tipo:', typeof board.id);
-    console.log('🔴 [Dashboard] Area ID:', board.area.id, 'tipo:', typeof board.area.id);
+    console.log('🎯 [Navegación] Navegando a tablero desde gestión de tableros');
+    console.log('📋 [Navegación] Board:', board.title, '| ID:', board.id);
+    console.log('🏢 [Navegación] Área:', board.area.name, '| ID:', board.area.id);
     
     const targetAreaId = board.area.id.toString();
     const targetBoardId = board.id.toString();
     
-    console.log('🔴 [Dashboard] Convirtiendo a strings:', {targetAreaId, targetBoardId});
-    console.log('🔴 [Dashboard] Llamando setActiveArea con:', targetAreaId);
-    console.log('🔴 [Dashboard] Llamando setBoardId con:', targetBoardId);
-    
+    // Primero cambiar área, luego boardId
     setActiveArea(targetAreaId);
     setBoardId(targetBoardId);
-    
-    console.log('🔴 [Dashboard] Estados actualizados (pending)');
     
     toast.success('Tablero cargado', {
       description: `${board.title} - ${board.area.name}`,
@@ -66,14 +55,26 @@ function DashboardContent() {
   }, []);
 
   const handleAreaChange = useCallback((newArea: string) => {
-    console.log('🔄 [Dashboard] Cambio manual de área a:', newArea);
+    console.log('🔄 [Navegación] Cambio de área:', activeArea, '→', newArea);
+    
     setActiveArea(newArea);
+    
+    // ✅ CRÍTICO: Limpiar boardId cuando cambias de área manualmente
+    // Esto evita que se muestre el tablero del área anterior
     setBoardId(null);
-  }, []);
+    
+    console.log('🧹 [Navegación] boardId limpiado para nueva área');
+  }, [activeArea]);
+
+  const handleBoardChange = useCallback((newBoardId: string | null) => {
+    console.log('📌 [Navegación] Cambio de tablero:', boardId, '→', newBoardId);
+    setBoardId(newBoardId);
+  }, [boardId]);
 
   const renderContent = () => {
-    console.log('🎨 [Render] Renderizando - activeArea:', activeArea, 'boardId:', boardId);
+    console.log('🎨 [Render] activeArea:', activeArea, '| boardId:', boardId);
     
+    // Secciones especiales (sin tableros Kanban)
     if (activeArea === "userManagement") {
       return (
         <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
@@ -83,7 +84,6 @@ function DashboardContent() {
     }
     
     if (activeArea === "boardManagement") {
-      console.log('🎨 [Render] Renderizando BoardManagementPanel');
       return (
         <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
           <BoardManagementPanel onNavigateToBoard={handleNavigateToBoard} />
@@ -107,10 +107,10 @@ function DashboardContent() {
       );
     }
 
+    // Secciones de áreas con tableros Kanban
     const area = areasData.find(area => area.id === activeArea);
 
     if (!area) {
-      console.log('⚠️ [Render] Área no encontrada:', activeArea);
       return (
         <div className="flex-1 flex items-center justify-center p-4">
           <p className="text-muted-foreground text-center">
@@ -120,13 +120,11 @@ function DashboardContent() {
       );
     }
 
-    console.log('🎨 [Render] Renderizando Kanban - área encontrada:', area);
-
     return (
       <>
         <KanbanHeader 
           activeArea={area} 
-          onBoardChange={setBoardId}
+          onBoardChange={handleBoardChange}
           currentBoardId={boardId}
           onTaskCreated={() => setRefreshTrigger(prev => prev + 1)}
           totalTasks={progress.total}
@@ -135,25 +133,24 @@ function DashboardContent() {
         />
         <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
           {boardId ? (
-            <>
-              {console.log('✅ [Render] Renderizando KanbanBoard con boardId:', boardId)}
-              <KanbanBoard 
-                boardIdValue={boardId} 
-                activeArea={activeArea} 
-                key={`${boardId}-${refreshTrigger}`}
-                onProgressChange={(total, completed) => setProgress({ total, completed })}
-                filters={filters}
-              />
-            </>
+            <KanbanBoard 
+              boardIdValue={boardId} 
+              activeArea={activeArea} 
+              key={`${boardId}-${refreshTrigger}`}
+              onProgressChange={(total, completed) => setProgress({ total, completed })}
+              filters={filters}
+            />
           ) : (
-            <>
-              {console.log('❌ [Render] No hay boardId, mostrando placeholder')}
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground text-center px-4">
-                  Seleccione un tablero para visualizar
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground text-lg font-medium">
+                  Seleccione un tablero para comenzar
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Use el selector de tableros en la barra superior
                 </p>
               </div>
-            </>
+            </div>
           )}
         </main>
       </>
