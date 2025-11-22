@@ -1,7 +1,7 @@
 'use client'
 
 import { Plus, TableIcon, Filter, X, Search } from 'lucide-react'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Area } from '@/types/area'
 import { boardService } from '@/services/board-service'
@@ -20,7 +20,7 @@ export interface TaskFilters {
 
 interface KanbanHeaderProps {
   activeArea: Area;
-  onBoardChange: (boardId: string) => void;
+  onBoardChange: (boardId: string | null) => void;
   currentBoardId: string | null;
   onTaskCreated: () => void;
   totalTasks: number;
@@ -47,12 +47,8 @@ export default function KanbanHeader({
     assignedToMe: false,
   });
 
-  //Usar ref para evitar llamar onBoardChange en cada render
-  const isFirstLoad = useRef(true);
-  const prevAreaId = useRef<string | null>(null);
-
   const handleBoardChange = (BoardId: string) => {
-    console.log("boardId seleccionado:", BoardId);
+    console.log("📌 Usuario seleccionó tablero:", BoardId);
     onBoardChange(BoardId);
   }
 
@@ -77,37 +73,25 @@ export default function KanbanHeader({
     filters.priority !== 'ALL' || 
     filters.assignedToMe;
 
-  //Separar la carga de boards de la selección automática
+  // ✅ Solo cargar boards cuando cambia el área - SIN auto-selección
   useEffect(() => {
     const fetchBoardsByArea = async() => {
       try {
+        console.log("🔄 Cargando boards del área:", activeArea.id);
         const boardsResponseData: Board[] | null = await boardService.getBoardsByArea(activeArea.id);
-        console.log("Boards del área:", boardsResponseData);
+        console.log("✅ Boards cargados:", boardsResponseData?.length || 0);
         setBoards(boardsResponseData);
+        
+        // ✅ NO seleccionar automáticamente ningún tablero
+        // El usuario debe elegir manualmente
       } catch (error) {
-        console.error("Error al cargar boards:", error);
+        console.error("❌ Error al cargar boards:", error);
+        setBoards(null);
       }
     }
 
     fetchBoardsByArea();
-  }, [activeArea.id]); 
-
-  // Seleccionar el primer board solo cuando cambien los boards o el área
-    useEffect(() => {
-      // Solo seleccionar automáticamente en la primera carga o cuando cambia el área
-      const areaChanged = prevAreaId.current !== activeArea.id;
-      
-      // NO seleccionar automáticamente si ya hay un boardId (viene de navegación)
-      if (boards && boards.length > 0 && (isFirstLoad.current || areaChanged) && !currentBoardId) {
-        console.log("Seleccionando primer board automáticamente");
-        onBoardChange(boards[0].id);
-        isFirstLoad.current = false;
-        prevAreaId.current = activeArea.id;
-      } else if (areaChanged) {
-        // Si cambió el área pero ya hay un boardId, solo actualizar el ref
-        prevAreaId.current = activeArea.id;
-      }
-    }, [boards, activeArea.id, currentBoardId]); // ✅ Agregar currentBoardId como dependencia
+  }, [activeArea.id]);
 
   return (
     <div className="border-b bg-background px-4 md:px-6 py-4 space-y-4">
@@ -123,6 +107,7 @@ export default function KanbanHeader({
         <Button 
           className="gap-2 bg-green-800 hover:bg-green-900 w-full md:w-auto" 
           onClick={() => setOpenDialogTask(true)}
+          disabled={!currentBoardId}
         >
           <Plus className="h-4 w-4" />
           <span className="md:inline">Nueva Tarea</span>
@@ -152,11 +137,17 @@ export default function KanbanHeader({
               <SelectValue placeholder="Seleccionar tablero" />
             </SelectTrigger>
             <SelectContent>
-              {boards?.map((board) => (
-                <SelectItem key={board?.id} value={board?.id}>
-                  {board.title}
-                </SelectItem>
-              ))}
+              {boards && boards.length > 0 ? (
+                boards.map((board) => (
+                  <SelectItem key={board.id} value={board.id}>
+                    {board.title}
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="p-2 text-sm text-muted-foreground text-center">
+                  No hay tableros disponibles
+                </div>
+              )}
             </SelectContent>
           </Select>
         </div>
