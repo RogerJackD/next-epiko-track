@@ -24,8 +24,8 @@ import {
 
 interface TaskCardProps {
   task: Task
-  onDeleted: () => void
   currentBoardId: string | null 
+  // ✨ Ya NO necesitamos onDeleted para refrescar datos
 }
 
 const priorityColors = {
@@ -43,17 +43,14 @@ const formatDate = (date: Date | string | number) => {
   });
 };
 
-export default function TaskCard({task, onDeleted} : TaskCardProps) {
+export default function TaskCard({ task, currentBoardId }: TaskCardProps) {
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   
-  // Hook de permisos
   const { canEditTask, canDeleteTask } = usePermissions();
   
-  // Obtener IDs de usuarios asignados
   const taskUserIds = task.assignedUsers?.map(au => au.user.id) || [];
   
-  // Verificar permisos
   const hasEditPermission = canEditTask(taskUserIds);
   const hasDeletePermission = canDeleteTask(taskUserIds);
 
@@ -70,10 +67,12 @@ export default function TaskCard({task, onDeleted} : TaskCardProps) {
     try {
       const response = await taskService.deleteTask(task.id);
       console.log(response.message);
+      
       toast.success('Tarea eliminada', {
-        description: 'La tarea se ha eliminado correctamente'
+        description: 'Los cambios se sincronizarán automáticamente'
       })
-      onDeleted();
+      
+      // ✨ YA NO llamamos onDeleted() - WebSocket se encarga de actualizar el tablero
     } catch (error) {
       console.error("Error al eliminar:", error);
       toast.error('Error al eliminar', {
@@ -230,10 +229,9 @@ export default function TaskCard({task, onDeleted} : TaskCardProps) {
         open={openEditDialog}
         onOpenChange={setOpenEditDialog}
         task={task}
-        onTaskUpdated={onDeleted}
       />
 
-      {/*Modal de confirmación de eliminación */}
+      {/* Modal de confirmación de eliminación */}
       <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

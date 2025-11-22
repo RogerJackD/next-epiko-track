@@ -16,7 +16,7 @@ interface EditTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   task: Task | null
-  onTaskUpdated: () => void
+  // ✨ Ya NO necesitamos onTaskUpdated para refrescar datos
 }
 
 interface TaskFormData {
@@ -45,8 +45,7 @@ interface UpdateTaskPayload {
 export default function EditTaskDialog({ 
   open, 
   onOpenChange, 
-  task,
-  onTaskUpdated 
+  task
 }: EditTaskDialogProps) {
   const { register, handleSubmit, setValue, reset, formState: { isSubmitting } } = useForm<TaskFormData>()
   const [users, setUsers] = useState<User[]>([])
@@ -55,22 +54,14 @@ export default function EditTaskDialog({
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [currentPriority, setCurrentPriority] = useState<'BAJA' | 'MEDIA' | 'ALTA'>('MEDIA')
 
-  // Función mejorada para formatear fechas
   const formatDateForInput = (dateStr: string | undefined): string => {
     if (!dateStr) return ''
     
     try {
-      // Manejar diferentes formatos:
-      // - "2025-11-08T05:00:00.000Z" (ISO 8601)
-      // - "2025-11-08 15:30:00" (formato con espacio)
-      // - "2025-11-08" (ya en formato correcto)
-      
-      // Si ya está en formato YYYY-MM-DD, retornar tal cual
       if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
         return dateStr
       }
       
-      // Si tiene 'T' o espacio, tomar solo la parte de la fecha
       if (dateStr.includes('T')) {
         return dateStr.split('T')[0]
       }
@@ -86,7 +77,6 @@ export default function EditTaskDialog({
     }
   }
 
-  // Formatear fecha para enviar al backend
   const formatDateTimeForBackend = (date: string, isStartDate: boolean = false): string | undefined => {
     if (!date || date.trim() === '') {
       return undefined
@@ -102,17 +92,13 @@ export default function EditTaskDialog({
       
       console.log('📋 Tarea a editar:', task)
       
-      // Cargar datos de la tarea
       setValue('title', task.title)
       setValue('description', task.description || '')
       
-      // Formatear y setear las fechas
       const formattedStartDate = formatDateForInput(task.startDate)
       const formattedDueDate = formatDateForInput(task.dueDate)
       
-      console.log('📅 Fecha inicio original:', task.startDate)
       console.log('📅 Fecha inicio formateada:', formattedStartDate)
-      console.log('📅 Fecha límite original:', task.dueDate)
       console.log('📅 Fecha límite formateada:', formattedDueDate)
       
       setValue('startDate', formattedStartDate)
@@ -120,7 +106,6 @@ export default function EditTaskDialog({
       setValue('priority', task.priority)
       setCurrentPriority(task.priority)
 
-      // Cargar usuarios asignados
       if (task.assignedUsers && task.assignedUsers.length > 0) {
         const assignedUsers = task.assignedUsers.map(au => ({
           id: au.user.id,
@@ -158,7 +143,6 @@ export default function EditTaskDialog({
 
     console.log('📝 Data del formulario:', data)
 
-    // Crear payload con tipos correctos
     const payload: UpdateTaskPayload = {
       title: data.title,
       description: data.description || 'sin descripción',
@@ -166,7 +150,6 @@ export default function EditTaskDialog({
       userIds: selectedUsers.map(u => u.id)
     }
 
-    // Solo agregar fechas si tienen valor válido
     const startDate = formatDateTimeForBackend(data.startDate, true)
     const dueDate = formatDateTimeForBackend(data.dueDate, false)
     
@@ -184,13 +167,14 @@ export default function EditTaskDialog({
       await taskService.updateTask(task.id, payload)
       
       toast.success('¡Tarea actualizada!', {
-        description: 'Los cambios se han guardado correctamente'
+        description: 'Los cambios se sincronizarán automáticamente'
       })
       
       reset()
       setSelectedUsers([])
       onOpenChange(false)
-      onTaskUpdated()
+      
+      // ✨ YA NO llamamos onTaskUpdated() - WebSocket se encarga de actualizar el tablero
     } catch (error) {
       console.error('❌ Error:', error)
       
