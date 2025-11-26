@@ -77,7 +77,7 @@ function DashboardContent() {
     // Secciones especiales (sin tableros Kanban)
     if (activeArea === "userManagement") {
       return (
-        <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
+        <main className="flex-1 overflow-auto bg-muted/30 md:p-6">
           <AdminPanel />
         </main>
       );

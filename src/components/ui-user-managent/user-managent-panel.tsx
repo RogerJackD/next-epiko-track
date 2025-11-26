@@ -124,9 +124,9 @@ export default function AdminPanel() {
 
 
   return (
-    <div className='p-6 bg-background min-h-screen'>
-      <div className='max-w-7xl mx-auto'>
-        <div className='bg-card rounded-lg shadow-sm p-6'>
+    <div className='bg-background min-h-screen'>
+      <div className='mx-auto'>
+        <div className='bg-card rounded-lg shadow-sm p-3'>
           <AdminHeader
             onSearch={handleSearch}
             onFilterRole={handleFilterRole}
