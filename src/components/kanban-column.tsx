@@ -5,8 +5,6 @@ import { Task } from '@/types/kanbanResponse'
 import TaskCard from './task-card'
 import { useDroppable } from '@dnd-kit/core'
 import CreateTaskDialog from './create-task-dialog'
-import { Button } from './ui/button'
-import { Plus } from 'lucide-react'
 import { Badge } from './ui/badge'
 
 interface KanbanColumnProps {
@@ -42,9 +40,9 @@ export default function KanbanColumn({
     <>
       <Card 
         ref={setNodeRef}
-        className={`flex flex-col h-full border-t-4 transition-all ${
+        className={`flex flex-col h-full border-t-4 transition-all duration-200 ${
           columnStyles[id as keyof typeof columnStyles]
-        } ${isOver ? 'ring-2 ring-primary bg-accent/50' : ''}`}
+        } ${isOver ? 'bg-blue-50/40 dark:bg-blue-950/20 ring-1 ring-blue-300/50 dark:ring-blue-700/50' : ''}`}
       >
         <CardHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -54,23 +52,15 @@ export default function KanbanColumn({
                 {totalTasks}
               </Badge>
             </div>
-            {id === 'por_hacer' && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => setOpenCreateDialog(true)}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            )}
           </div>
         </CardHeader>
         
         <CardContent className="flex-1 overflow-y-auto space-y-3 min-h-0">
           {tasks.length === 0 ? (
-            <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">
-              {totalTasks === 0 ? 'No hay tareas' : 'Sin tareas visibles'}
+            <div className={`flex items-center justify-center h-32 text-sm transition-colors duration-200 ${
+              isOver ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'
+            }`}>
+              {isOver ? 'Suelta aquí' : totalTasks === 0 ? 'No hay tareas' : 'Sin tareas visibles'}
             </div>
           ) : (
             tasks.map((task) => (

@@ -23,7 +23,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { TaskFilters } from './kanban-header'
 import { socketService } from '@/services/socket-service/socket-service'
 const columns = [
-  { id: "por_hacer", title: "Pendiente", statusId: 1 },
+  { id: "por_hacer", title: "Por Hacer", statusId: 1 },
   { id: "en_proceso", title: "En Progreso", statusId: 2 },
   { id: "en_revision", title: "En Revisión", statusId: 3 },
   { id: "completado", title: "Completado", statusId: 4 },
@@ -125,7 +125,7 @@ export default function KanbanBoard({
       }
     }, [progress.total, progress.completed, onProgressChange]);
 
-    // ✨ NUEVO: Configurar WebSocket para actualizaciones en tiempo real
+    //Configurar WebSocket para actualizaciones en tiempo real
     useEffect(() => {
       if (!user?.id || !boardIdValue || isSubscribedRef.current) return;
 
@@ -140,11 +140,9 @@ export default function KanbanBoard({
         user.id,
         // Callback para datos iniciales
         (initialData) => {
-          console.log('✅ Datos iniciales recibidos por WebSocket:', initialData);
           
           if (!initialData) {
-            console.error('❌ No se recibieron datos iniciales, usando REST como fallback');
-            fetchKanbanData();
+            //fetchKanbanData();
             return;
           }
           
@@ -153,21 +151,16 @@ export default function KanbanBoard({
         },
         // Callback para actualizaciones en tiempo real
         (updatedData) => {
-          console.log('🔄 Actualización en tiempo real recibida:', updatedData);
-          
           if (!updatedData) {
-            console.error('❌ Datos de actualización vacíos');
             return;
           }
           
-          // ✨ ARREGLO: Actualizar estado sin importar quién hizo el cambio
+          //Actualizar estado sin importar quién hizo el cambio
           setKanbanData({
             board_id: updatedData.board_id,
             board_name: updatedData.board_name,
             columns: updatedData.columns,
           });
-          
-          console.log('✅ Estado actualizado correctamente');
         }
       );
 
@@ -179,12 +172,11 @@ export default function KanbanBoard({
         socketService.unsubscribeFromBoard(Number(boardIdValue));
         isSubscribedRef.current = false;
       };
-    }, [user?.id, boardIdValue]); // ✅ Solo user.id y boardIdValue
+    }, [user?.id, boardIdValue]); //
     
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     // fetchKanbanData se usa solo como fallback dentro del callback
 
-    // ✨ Resetear suscripción cuando cambia de área
+    //Resetear suscripción cuando cambia de área
     useEffect(() => {
       if (isSubscribedRef.current) {
         socketService.unsubscribeFromBoard(Number(boardIdValue));
@@ -299,17 +291,14 @@ export default function KanbanBoard({
 
         try {
             await taskService.updateTaskStatus(taskId, targetColumn.statusId);
-            console.log(`✅ Tarea ${taskId} movida a ${newColumnId} (status ${targetColumn.statusId})`);
-            
             toast.success('Tarea movida correctamente', {
               description: `Movida a ${targetColumn.title}`,
               duration: 2000,
             });
         } catch (error) {
-            console.error("❌ Error al mover la tarea:", error);
             toast.error('Error al mover la tarea');
-            
-            // ✨ Revertir cambio optimista - forzar recarga desde WebSocket
+            console.log(error)
+            // Revertir cambio optimista - forzar recarga desde WebSocket
             const refreshData = await kanbanService.getKanbanBoardById(boardIdValue);
             setKanbanData(refreshData);
         }
