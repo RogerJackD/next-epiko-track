@@ -11,6 +11,9 @@ import { useUserTasksContext } from '@/contexts/UserTasksContext'
 import { PermissionGuard } from './auth/permission-guard'
 import { Permission } from '@/types/permissions'
 
+import { KeyRound } from 'lucide-react';
+import { ChangePasswordDialog } from './ui-changePassword/change-password-dialog'
+
 const areas = [
   {
     title: "Tecnología",
@@ -43,6 +46,8 @@ export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) 
   const router = useRouter()
   const { user, isLoading, logout } = useAuth()
   const { taskCount, isConnected } = useUserTasksContext()
+
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false);
 
   const handleLogout = () => {
     logout()
@@ -220,6 +225,22 @@ export default function AppSidebar({activeArea, onAreaChange}: AppSidebarProps) 
                 <LogOut className="h-3 w-3" />
                 Cerrar Sesión
               </Button>
+
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                onClick={() => setIsChangePasswordOpen(true)}
+              >
+                <KeyRound className="h-3 w-3" />
+                    Cambiar Contraseña
+              </Button>
+
+                  <ChangePasswordDialog 
+                    open={isChangePasswordOpen}
+                    onOpenChange={setIsChangePasswordOpen}
+                  />
+
             </>
           ) : (
             <div className="text-center text-sm text-muted-foreground">
