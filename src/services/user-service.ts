@@ -1,4 +1,4 @@
-import { CreateUserDTO, UpdateUserDTO, User } from "@/types/user";
+import { ChangePasswordDTO, CreateUserDTO, UpdateUserDTO, User } from "@/types/user";
 
 export const userService = {
 
@@ -81,6 +81,29 @@ export const userService = {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(updateUserData),
+        })
+        if( !response.ok){
+            let errorMessage = `Error ${response.status}: ${response.statusText}`
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorData;
+                console.log(errorMessage)
+            } catch {
+                console.log("error unexpected, check servers logs");
+            }
+            throw new Error(errorMessage)
+        }
+        return await response.json()
+    },
+
+
+    async changePasswordUser(changePasswordDto: ChangePasswordDTO, userId : string) {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/user/change-password/${userId}`,{
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(changePasswordDto),
         })
         if( !response.ok){
             let errorMessage = `Error ${response.status}: ${response.statusText}`
