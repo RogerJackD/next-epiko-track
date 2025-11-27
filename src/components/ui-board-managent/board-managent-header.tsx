@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Plus, Filter, Download, LayoutGrid } from 'lucide-react'
+import { Search, Plus, Filter, LayoutGrid } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -24,7 +24,6 @@ export default function BoardManagementHeader({
   onFilterArea,
   onFilterStatus,
   onAddBoard,
-  onExport,
   totalBoards = 0
 }: BoardManagementHeaderProps) {
   return (
@@ -41,10 +40,6 @@ export default function BoardManagementHeader({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onExport}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
           <Button size="sm" onClick={onAddBoard}>
             <Plus className="h-4 w-4 mr-2" />
             Nuevo Tablero

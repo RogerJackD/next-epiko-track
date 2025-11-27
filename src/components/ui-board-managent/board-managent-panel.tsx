@@ -1,164 +1,157 @@
 'use client'
 
-import { boardService } from '@/services/board-service'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Project } from '@/types/board'
-import React, { useState, useEffect } from 'react'
-import BoardManagementHeader from './board-managent-header'
+import { boardService } from '@/services/board-service'
+import { toast } from 'sonner'
 import BoardManagementTable from './board-managent-table'
-import CreateBoardModal from './create-board-modal'
-import EditBoardModal from './edit-board-modal'
 import ConfirmStatusModal from './confirm-status-modal'
+import BoardManagementHeader from './board-managent-header'
+import EditBoardModal from './edit-board-modal'
 
-export default function BoardManagementPanel() {
-  const [boards, setBoards] = useState<Project[]>([])
-  const [filteredBoards, setFilteredBoards] = useState<Project[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [areaFilter, setAreaFilter] = useState('all')
+interface BoardManagementPanelProps {
+  onNavigateToBoard?: (board: Project) => void;
+}
+
+export default function BoardManagementPanel({ onNavigateToBoard }: BoardManagementPanelProps) {
+  const [boards, setBoards] = useState<Project[]>([]);
+  const [filteredBoards, setFilteredBoards] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Modales
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
-  const [selectedBoard, setSelectedBoard] = useState<Project | null>(null)
-  const [newStatusValue, setNewStatusValue] = useState(false)
+  // Estados para el modal de confirmación de estado
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [selectedBoard, setSelectedBoard] = useState<Project | null>(null);
+  const [newStatus, setNewStatus] = useState(false);
 
-  // Función para cargar tableros
-  const fetchBoards = async () => {
-    try {
-      const data = await boardService.getAllBoards()
-      setBoards(data)
-      setFilteredBoards(data)
-      console.log(data)
-    } catch (error) {
-      console.error('Error fetching boards:', error)
-    }
-  }
+  // Estados para el modal de edición
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [boardToEdit, setBoardToEdit] = useState<Project | null>(null);
+
+  // Estados para filtros
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [areaFilter, setAreaFilter] = useState('all');
 
   useEffect(() => {
-    fetchBoards()
-  }, [])
+    loadBoards();
+  }, []);
 
-  // Filtrar tableros
-  useEffect(() => {
-    let filtered = [...boards]
+  // ✅ useCallback para evitar recrear la función en cada render
+  const applyFilters = useCallback(() => {
+    let filtered = [...boards];
 
     // Filtro de búsqueda
-    if (searchTerm) {
+    if (searchQuery) {
       filtered = filtered.filter(board =>
-        board.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        board.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+        board.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        board.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
 
     // Filtro de estado
     if (statusFilter !== 'all') {
-      const isActive = statusFilter === 'active'
-      filtered = filtered.filter(board => board.isActive === isActive)
+      const isActive = statusFilter === 'active';
+      filtered = filtered.filter(board => board.isActive === isActive);
     }
 
     // Filtro de área
     if (areaFilter !== 'all') {
       filtered = filtered.filter(board => 
         board.area.name.toLowerCase() === areaFilter.toLowerCase()
-      )
+      );
     }
 
-    setFilteredBoards(filtered)
-  }, [searchTerm, statusFilter, areaFilter, boards])
+    setFilteredBoards(filtered);
+  }, [boards, searchQuery, statusFilter, areaFilter]); // ✅ Todas las dependencias
 
-  const handleSearch = (search: string) => {
-    setSearchTerm(search)
-  }
+  // ✅ Ahora sí incluir applyFilters como dependencia
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
-  const handleFilterStatus = (status: string) => {
-    setStatusFilter(status)
-  }
-
-  const handleFilterArea = (area: string) => {
-    setAreaFilter(area)
-  }
-
-  const handleAddBoard = () => {
-    setIsCreateModalOpen(true)
-  }
-
-  const handleBoardCreated = () => {
-    fetchBoards()
-  }
-
-  const handleExport = () => {
-    console.log('Exportar tableros')
-  }
+  const loadBoards = async () => {
+    setIsLoading(true);
+    try {
+      const data = await boardService.getAllBoards();
+      setBoards(data);
+      setFilteredBoards(data);
+    } catch (error) {
+      toast.error('Error al cargar tableros');
+      console.error('Error cargando boards:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleView = (board: Project) => {
-    console.log('Ver tablero:', board)
-    // Redirigir al tablero Kanban
-  }
+    console.log('🟢 [Panel] handleView recibió board:', board);
+    console.log('🟢 [Panel] onNavigateToBoard es:', onNavigateToBoard ? 'definido' : 'undefined');
+    onNavigateToBoard?.(board);
+  };
 
   const handleEdit = (board: Project) => {
-    setSelectedBoard(board)
-    setIsEditModalOpen(true)
-  }
-
-  const handleBoardUpdated = () => {
-    fetchBoards()
-  }
+    console.log('Editando tablero:', board);
+    setBoardToEdit(board);
+    setEditModalOpen(true);
+  };
 
   const handleToggleStatus = (board: Project) => {
-    setSelectedBoard(board)
-    setNewStatusValue(!board.isActive)
-    setIsStatusModalOpen(true)
-  }
+    setSelectedBoard(board);
+    setNewStatus(!board.isActive);
+    setConfirmModalOpen(true);
+  };
 
-  const handleStatusChanged = () => {
-    fetchBoards()
+  const handleConfirmSuccess = () => {
+    loadBoards();
+  };
+
+  const handleEditSuccess = () => {
+    loadBoards();
+  };
+
+  const handleAddBoard = () => {
+    toast.info('Función de crear tablero en desarrollo');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Cargando tableros...</p>
+      </div>
+    );
   }
 
   return (
-    <div className='p-6 bg-background min-h-screen'>
-      <div className='max-w-7xl mx-auto'>
-        <div className='bg-card rounded-lg shadow-sm p-6'>
-          <BoardManagementHeader
-            onSearch={handleSearch}
-            onFilterArea={handleFilterArea}
-            onFilterStatus={handleFilterStatus}
-            onAddBoard={handleAddBoard}
-            onExport={handleExport}
-            totalBoards={filteredBoards.length}
-          />
-          <BoardManagementTable
-            boards={filteredBoards}
-            onView={handleView}
-            onEdit={handleEdit}
-            onToggleStatus={handleToggleStatus}
-          />
-        </div>
-      </div>
-
-      {/* Modal de creación */}
-      <CreateBoardModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-        onSuccess={handleBoardCreated}
+    <div className="space-y-6">
+      <BoardManagementHeader
+        onSearch={setSearchQuery}
+        onFilterArea={setAreaFilter}
+        onFilterStatus={setStatusFilter}
+        onAddBoard={handleAddBoard}
+        totalBoards={filteredBoards.length}
       />
 
-      {/* Modal de edición */}
-      <EditBoardModal
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        onSuccess={handleBoardUpdated}
-        board={selectedBoard}
+      <BoardManagementTable
+        boards={filteredBoards}
+        onView={handleView}
+        onEdit={handleEdit}
+        onToggleStatus={handleToggleStatus}
       />
 
-      {/* Modal de confirmación de cambio de estado */}
       <ConfirmStatusModal
-        open={isStatusModalOpen}
-        onOpenChange={setIsStatusModalOpen}
-        onSuccess={handleStatusChanged}
+        open={confirmModalOpen}
+        onOpenChange={setConfirmModalOpen}
+        onSuccess={handleConfirmSuccess}
         board={selectedBoard}
-        newStatus={newStatusValue}
+        newStatus={newStatus}
+      />
+
+      <EditBoardModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        onSuccess={handleEditSuccess}
+        board={boardToEdit}
       />
     </div>
-  )
+  );
 }

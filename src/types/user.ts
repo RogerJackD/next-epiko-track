@@ -48,3 +48,13 @@ export interface UpdateUserDTO {
   areaId?: number;
   status?: boolean; 
 }
+
+export interface ChangePasswordDTO {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordDTO {
+  currentPassword: string;
+  newPassword: string;
+}

@@ -6,20 +6,18 @@ import KanbanHeader from "@/components/kanban-header";
 import Notifications from "@/components/ui-notifications/notifications";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { areasData } from "@/data/area.data";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { TokenService } from "@/services/auth/tokens";
+import { useEffect, useState, useCallback } from "react";
 import AuthGuard from "@/components/auth/auth-guard";
 import AppSidebar from "@/components/app-sidebar";
 import BoardManagementPanel from "@/components/ui-board-managent/board-managent-panel";
 import TasksUserPanel from "@/components/ui-tasks-user/taks-user.panel";
 import { useAuth } from "@/hooks/useAuth";
 import { TaskFilters } from '@/components/kanban-header';
+import { Project } from '@/types/board';
+import { toast } from 'sonner';
+
 function DashboardContent() {
-const router = useRouter()
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [activeArea, setActiveArea] = useState<string>("");
   const [boardId, setBoardId] = useState<string | null>(null); 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -29,43 +27,73 @@ const router = useRouter()
     priority: 'ALL',
     assignedToMe: false,
   });
+
   // Establecer el área inicial según el área del usuario
   useEffect(() => {
     if (user?.area?.id) {
       setActiveArea(user.area.id.toString());
-      console.log("Área inicial del usuario:", user.area.id);
+      console.log("🏠 Área inicial del usuario:", user.area.id);
     }
   }, [user?.area?.id]);
 
-  // Resetear boardId cuando cambia el área
-  useEffect(() => {
+  const handleNavigateToBoard = useCallback((board: Project) => {
+    console.log('🎯 [Navegación] Navegando a tablero desde gestión de tableros');
+    console.log('📋 [Navegación] Board:', board.title, '| ID:', board.id);
+    console.log('🏢 [Navegación] Área:', board.area.name, '| ID:', board.area.id);
+    
+    const targetAreaId = board.area.id.toString();
+    const targetBoardId = board.id.toString();
+    
+    // Primero cambiar área, luego boardId
+    setActiveArea(targetAreaId);
+    setBoardId(targetBoardId);
+    
+    toast.success('Tablero cargado', {
+      description: `${board.title} - ${board.area.name}`,
+      duration: 2000,
+    });
+  }, []);
+
+  const handleAreaChange = useCallback((newArea: string) => {
+    console.log('🔄 [Navegación] Cambio de área:', activeArea, '→', newArea);
+    
+    setActiveArea(newArea);
+    
+    // ✅ CRÍTICO: Limpiar boardId cuando cambias de área manualmente
+    // Esto evita que se muestre el tablero del área anterior
     setBoardId(null);
+    
+    console.log('🧹 [Navegación] boardId limpiado para nueva área');
   }, [activeArea]);
 
-  const handleLogout = () => {
-    TokenService.clearAll() 
-    router.push('/login')
-  }
+  const handleBoardChange = useCallback((newBoardId: string | null) => {
+    console.log('📌 [Navegación] Cambio de tablero:', boardId, '→', newBoardId);
+    setBoardId(newBoardId);
+  }, [boardId]);
 
   const renderContent = () => {
+    console.log('🎨 [Render] activeArea:', activeArea, '| boardId:', boardId);
+    
+    // Secciones especiales (sin tableros Kanban)
     if (activeArea === "userManagement") {
       return (
-        <main className="flex-1 overflow-auto bg-muted/30 p-6">
+        <main className="flex-1 overflow-auto bg-muted/30 md:p-6">
           <AdminPanel />
         </main>
       );
     }
+    
     if (activeArea === "boardManagement") {
       return (
-        <main className="flex-1 overflow-auto bg-muted/30 p-6">
-          <BoardManagementPanel />
+        <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
+          <BoardManagementPanel onNavigateToBoard={handleNavigateToBoard} />
         </main>
       );
     }
 
     if (activeArea === "notifications") {
       return (
-        <div className="flex-1 overflow-auto bg-muted/30 p-6">
+        <div className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
           <Notifications />
         </div>
       );
@@ -73,18 +101,21 @@ const router = useRouter()
 
     if (activeArea === "myTasks") {
       return (
-        <div className="flex-1 overflow-auto bg-muted/30 p-6">
+        <div className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
           <TasksUserPanel />
         </div>
       );
     }
 
+    // Secciones de áreas con tableros Kanban
     const area = areasData.find(area => area.id === activeArea);
 
     if (!area) {
       return (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground">Seleccione un área para ver su contenido.</p>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <p className="text-muted-foreground text-center">
+            Seleccione un área para ver su contenido.
+          </p>
         </div>
       );
     }
@@ -93,25 +124,32 @@ const router = useRouter()
       <>
         <KanbanHeader 
           activeArea={area} 
-          onBoardChange={setBoardId}
+          onBoardChange={handleBoardChange}
           currentBoardId={boardId}
           onTaskCreated={() => setRefreshTrigger(prev => prev + 1)}
           totalTasks={progress.total}
           completedTasks={progress.completed}
           onFiltersChange={setFilters}
         />
-        <main className="flex-1 overflow-auto bg-muted/30 p-6">
+        <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
           {boardId ? (
             <KanbanBoard 
               boardIdValue={boardId} 
               activeArea={activeArea} 
-              key={refreshTrigger}
+              key={`${boardId}-${refreshTrigger}`}
               onProgressChange={(total, completed) => setProgress({ total, completed })}
               filters={filters}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-muted-foreground">Seleccione un tablero para visualizar</p>
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground text-lg font-medium">
+                  Seleccione un tablero para comenzar
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Use el selector de tableros en la barra superior
+                </p>
+              </div>
             </div>
           )}
         </main>
@@ -121,10 +159,10 @@ const router = useRouter()
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full p-4">
-        <AppSidebar activeArea={activeArea} onAreaChange={setActiveArea}/>
+      <div className="flex h-screen w-full p-2 md:p-4">
+        <AppSidebar activeArea={activeArea} onAreaChange={handleAreaChange}/>
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between border-b px-4 py-2">
+          <div className="flex items-center justify-between border-b px-2 md:px-4 py-2">
             <SidebarTrigger />
           </div>
           {renderContent()}

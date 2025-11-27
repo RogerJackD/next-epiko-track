@@ -15,7 +15,7 @@ interface CreateTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   currentBoardId: string | null
-  onTaskCreated: () => void
+  // ✨ Ya NO necesitamos onTaskCreated para refrescar datos
 }
 
 interface TaskFormData {
@@ -44,8 +44,7 @@ interface CreateTaskPayload {
 export default function CreateTaskDialog({ 
   open, 
   onOpenChange, 
-  currentBoardId, 
-  onTaskCreated 
+  currentBoardId
 }: CreateTaskDialogProps) {
   const { register, handleSubmit, setValue, reset, formState: { isSubmitting } } = useForm<TaskFormData>()
   const [users, setUsers] = useState<User[]>([])
@@ -83,7 +82,6 @@ export default function CreateTaskDialog({
       return
     }
 
-    // Formatear fecha para backend
     const formatDateTime = (date: string, isStartDate: boolean = false): string | undefined => {
       if (!date || date.trim() === '') return undefined
       
@@ -113,13 +111,14 @@ export default function CreateTaskDialog({
       await taskService.createTasksByBoard(currentBoardId, payload)
       
       toast.success('¡Tarea creada!', {
-        description: 'La tarea se ha creado correctamente'
+        description: 'La tarea se sincronizará automáticamente'
       })
       
       reset()
       setSelectedUsers([])
       onOpenChange(false)
-      onTaskCreated()
+      
+      // ✨ YA NO llamamos onTaskCreated() - WebSocket se encarga de actualizar el tablero
     } catch (error) {
       toast.error('Error al crear tarea', {
         description: error instanceof Error ? error.message : 'Error desconocido'

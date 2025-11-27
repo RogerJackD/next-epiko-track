@@ -21,9 +21,9 @@ import { toast } from 'sonner'
 import { Lock } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { TaskFilters } from './kanban-header'
-
+import { socketService } from '@/services/socket-service/socket-service'
 const columns = [
-  { id: "por_hacer", title: "Pendiente", statusId: 1 },
+  { id: "por_hacer", title: "Por Hacer", statusId: 1 },
   { id: "en_proceso", title: "En Progreso", statusId: 2 },
   { id: "en_revision", title: "En Revisión", statusId: 3 },
   { id: "completado", title: "Completado", statusId: 4 },
@@ -43,14 +43,14 @@ export default function KanbanBoard({
   filters 
 }: KanbanBoardProps) {
     const [kanbanData, setKanbanData] = useState<KanbanBoardResponse>();
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // ✨ Cambiar a true inicial
     const [activeTask, setActiveTask] = useState<Task | null>(null);
     const { user } = useAuth();
     
     const { canMoveTask } = usePermissions();
     
-    // ✅ Usar ref para guardar el progreso anterior
     const prevProgressRef = useRef({ total: 0, completed: 0 });
+    const isSubscribedRef = useRef(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -71,7 +71,6 @@ export default function KanbanBoard({
       if (!filters) return tasks;
 
       return tasks.filter(task => {
-        // Filtro de búsqueda
         if (filters.search) {
           const searchLower = filters.search.toLowerCase();
           const matchesSearch = 
@@ -80,12 +79,10 @@ export default function KanbanBoard({
           if (!matchesSearch) return false;
         }
 
-        // Filtro de prioridad
         if (filters.priority !== 'ALL' && task.priority !== filters.priority) {
           return false;
         }
 
-        // Filtro de asignación
         if (filters.assignedToMe && user) {
           const isAssignedToMe = task.assignedUsers?.some(
             au => au.user.id === user.id
@@ -117,34 +114,76 @@ export default function KanbanBoard({
       return { total, completed };
     }, [kanbanData, filterTasks]);
 
-    // ✅ Solo llamar onProgressChange cuando realmente cambió el progreso
+    // Solo llamar onProgressChange cuando realmente cambió el progreso
     useEffect(() => {
       const { total, completed } = progress;
       const prev = prevProgressRef.current;
       
-      // Solo actualizar si los valores cambiaron
       if (prev.total !== total || prev.completed !== completed) {
         prevProgressRef.current = { total, completed };
         onProgressChange?.(total, completed);
       }
-    }, [progress.total, progress.completed]); // ✅ Dependencias específicas, no onProgressChange
+    }, [progress.total, progress.completed, onProgressChange]);
 
-    const fetchKanbanData = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const BoardKanbanResponse: KanbanBoardResponse = await kanbanService.getKanbanBoardById(boardIdValue);
-            console.log("Kanban data cargada:", BoardKanbanResponse);
-            setKanbanData(BoardKanbanResponse);
-        } catch (error) {
-            console.error("Error al cargar el kanban:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [boardIdValue]);
-
+    //Configurar WebSocket para actualizaciones en tiempo real
     useEffect(() => {
-        fetchKanbanData();
-    }, [fetchKanbanData, activeArea]);
+      if (!user?.id || !boardIdValue || isSubscribedRef.current) return;
+
+      console.log(`🔌 Configurando WebSocket para tablero ${boardIdValue}`);
+
+      // Conectar socket
+      socketService.connect();
+
+      // Suscribirse al tablero
+      socketService.subscribeToBoard(
+        Number(boardIdValue),
+        user.id,
+        // Callback para datos iniciales
+        (initialData) => {
+          
+          if (!initialData) {
+            //fetchKanbanData();
+            return;
+          }
+          
+          setKanbanData(initialData);
+          setIsLoading(false);
+        },
+        // Callback para actualizaciones en tiempo real
+        (updatedData) => {
+          if (!updatedData) {
+            return;
+          }
+          
+          //Actualizar estado sin importar quién hizo el cambio
+          setKanbanData({
+            board_id: updatedData.board_id,
+            board_name: updatedData.board_name,
+            columns: updatedData.columns,
+          });
+        }
+      );
+
+      isSubscribedRef.current = true;
+
+      // Cleanup: desuscribirse al desmontar o cambiar de tablero
+      return () => {
+        console.log(`🔌 Desuscribiendo del tablero ${boardIdValue}`);
+        socketService.unsubscribeFromBoard(Number(boardIdValue));
+        isSubscribedRef.current = false;
+      };
+    }, [user?.id, boardIdValue]); //
+    
+    // fetchKanbanData se usa solo como fallback dentro del callback
+
+    //Resetear suscripción cuando cambia de área
+    useEffect(() => {
+      if (isSubscribedRef.current) {
+        socketService.unsubscribeFromBoard(Number(boardIdValue));
+        isSubscribedRef.current = false;
+        setIsLoading(true);
+      }
+    }, [activeArea, boardIdValue]);
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
@@ -217,19 +256,51 @@ export default function KanbanBoard({
             return;
         }
 
+        // ✨ Actualización optimista
+        setKanbanData(prevData => {
+          if (!prevData) return prevData;
+
+          const newColumns = { ...prevData.columns };
+          
+          // Remover de columna actual
+          if (currentColumnId) {
+            const currentColumn = newColumns[currentColumnId as keyof typeof newColumns];
+            if (currentColumn) {
+              newColumns[currentColumnId as keyof typeof newColumns] = {
+                ...currentColumn,
+                tasks: currentColumn.tasks.filter(t => t.id !== taskId)
+              };
+            }
+          }
+
+          // Agregar a nueva columna
+          const targetColumnData = newColumns[newColumnId as keyof typeof newColumns];
+          if (targetColumnData) {
+            const updatedTask = { ...activeTask, status: newColumnId as any };
+            newColumns[newColumnId as keyof typeof newColumns] = {
+              ...targetColumnData,
+              tasks: [...targetColumnData.tasks, updatedTask]
+            };
+          }
+
+          return {
+            ...prevData,
+            columns: newColumns
+          };
+        });
+
         try {
             await taskService.updateTaskStatus(taskId, targetColumn.statusId);
-            console.log(`Tarea ${taskId} movida a ${newColumnId} (status ${targetColumn.statusId})`);
-            
-            await fetchKanbanData();
-            
             toast.success('Tarea movida correctamente', {
               description: `Movida a ${targetColumn.title}`,
               duration: 2000,
             });
         } catch (error) {
-            console.error("Error al mover la tarea:", error);
             toast.error('Error al mover la tarea');
+            console.log(error)
+            // Revertir cambio optimista - forzar recarga desde WebSocket
+            const refreshData = await kanbanService.getKanbanBoardById(boardIdValue);
+            setKanbanData(refreshData);
         }
     };
     
@@ -261,7 +332,6 @@ export default function KanbanBoard({
                             status={column.id} 
                             tasks={filteredTasks}
                             totalTasks={allTasks.length}
-                            onTaskDeleted={fetchKanbanData} 
                             currentBoardId={boardIdValue} 
                         />
                     )
@@ -273,7 +343,6 @@ export default function KanbanBoard({
                     <div className="rotate-3 opacity-80">
                         <TaskCard 
                             task={activeTask} 
-                            onDeleted={() => {}} 
                             currentBoardId={boardIdValue}
                         />
                     </div>
