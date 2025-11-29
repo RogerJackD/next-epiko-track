@@ -4,6 +4,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { taskService } from '@/services/task-service';
 import { userService } from '@/services/user-service';
 import { X } from 'lucide-react';
@@ -17,23 +19,43 @@ interface TaskDialogProps {
   taskToEdit?: Task | null; 
 }
 
-interface TaskFormData {
-  title: string;
-  description: string;
-  startDate: string;
-  dueDate: string;
-  priority: 'BAJA' | 'MEDIA' | 'ALTA';
-  userIds?: string[];
-}
-
 interface User {
   id: string;
   firstName: string;
   lastName: string;
 }
 
+// Schema de validación con Zod
+const taskSchema = z.object({
+  title: z.string().min(1, 'El título es requerido'),
+  description: z.string().optional(),
+  startDate: z.string().optional().refine((date) => {
+    if (!date) return true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(date + 'T00:00:00');
+    return selectedDate >= today;
+  }, {
+    message: 'La fecha de inicio no puede ser anterior a hoy'
+  }),
+  dueDate: z.string().optional().refine((date) => {
+    if (!date) return true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(date + 'T00:00:00');
+    return selectedDate >= today;
+  }, {
+    message: 'La fecha límite no puede ser anterior a hoy'
+  }),
+  priority: z.enum(['BAJA', 'MEDIA', 'ALTA'])
+});
+
+type TaskFormData = z.infer<typeof taskSchema>;
+
 export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskCreated, taskToEdit }: TaskDialogProps) {
-  const { register, handleSubmit, setValue, reset } = useForm<TaskFormData>(); 
+  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<TaskFormData>({
+    resolver: zodResolver(taskSchema)
+  }); 
   const [users, setUsers] = useState<User[] | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -81,8 +103,8 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskC
     const payload = {
       title: data.title,
       description: data.description || 'sin descripción',
-      startDate: formatDateTime(data.startDate, true),
-      dueDate: formatDateTime(data.dueDate, false),
+      startDate: formatDateTime(data.startDate || '', true),
+      dueDate: formatDateTime(data.dueDate || '', false),
       priority: data.priority,
       userIds: selectedUsers.map(u => u.id)
     };
@@ -138,7 +160,10 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskC
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-2">
             <label htmlFor="title" className="text-sm font-medium">Título</label>
-            <Input id="title" placeholder="Nombre de la tarea" {...register("title", { required: true })} />
+            <Input id="title" placeholder="Nombre de la tarea" {...register("title")} />
+            {errors.title && (
+              <p className="text-sm text-destructive">{errors.title.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -156,11 +181,17 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskC
             <div className="space-y-2">
               <label htmlFor="startDate" className="text-sm font-medium">Fecha Inicio</label>
               <Input id="startDate" type="date" {...register("startDate")} /> 
+              {errors.startDate && (
+                <p className="text-sm text-destructive">{errors.startDate.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <label htmlFor="dueDate" className="text-sm font-medium">Fecha Límite</label>
               <Input id="dueDate" type="date" {...register("dueDate")} /> 
+              {errors.dueDate && (
+                <p className="text-sm text-destructive">{errors.dueDate.message}</p>
+              )}
             </div>
           </div>
 
@@ -176,6 +207,9 @@ export default function TaskDialog({ open, onOpenChange, currentBoardId, onTaskC
                 <SelectItem value="ALTA">Alta</SelectItem>
               </SelectContent>
             </Select>
+            {errors.priority && (
+              <p className="text-sm text-destructive">{errors.priority.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">

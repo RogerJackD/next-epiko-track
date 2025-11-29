@@ -22,6 +22,8 @@ import { Lock } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { TaskFilters } from './kanban-header'
 import { socketService } from '@/services/socket-service/socket-service'
+import { UserRole } from '@/types/permissions'
+
 const columns = [
   { id: "por_hacer", title: "Por Hacer", statusId: 1 },
   { id: "en_proceso", title: "En Progreso", statusId: 2 },
@@ -43,7 +45,7 @@ export default function KanbanBoard({
   filters 
 }: KanbanBoardProps) {
     const [kanbanData, setKanbanData] = useState<KanbanBoardResponse>();
-    const [isLoading, setIsLoading] = useState(true); // ✨ Cambiar a true inicial
+    const [isLoading, setIsLoading] = useState(true);
     const [activeTask, setActiveTask] = useState<Task | null>(null);
     const { user } = useAuth();
     
@@ -172,10 +174,8 @@ export default function KanbanBoard({
         socketService.unsubscribeFromBoard(Number(boardIdValue));
         isSubscribedRef.current = false;
       };
-    }, [user?.id, boardIdValue]); //
+    }, [user?.id, boardIdValue]);
     
-    // fetchKanbanData se usa solo como fallback dentro del callback
-
     //Resetear suscripción cuando cambia de área
     useEffect(() => {
       if (isSubscribedRef.current) {
@@ -253,6 +253,29 @@ export default function KanbanBoard({
         const taskUserIds = activeTask.assignedUsers?.map(au => au.user.id) || [];
         if (!canMoveTask(taskUserIds)) {
             toast.error('No tienes permiso para mover esta tarea');
+            return;
+        }
+
+        // ✅ NUEVA VALIDACIÓN: Usuarios con rol USER no pueden mover a "completado"
+        const userRole = user?.role?.name?.toLowerCase() as UserRole;
+        if (userRole === UserRole.USER && newColumnId === 'completado') {
+            toast.error(
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Lock className="h-5 w-5 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">Acción no permitida</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Solo administradores y managers pueden marcar tareas como completadas
+                  </p>
+                </div>
+              </div>,
+              {
+                duration: 4000,
+                className: 'bg-white border-l-4 border-l-orange-500',
+              }
+            );
             return;
         }
 

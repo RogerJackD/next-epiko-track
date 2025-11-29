@@ -1,8 +1,8 @@
 import React from 'react';
-import { PlusCircle, Edit3, Trash2, CheckCircle2 } from 'lucide-react';
+import { PlusCircle, Edit3, Trash2, CheckCircle2, UserMinus } from 'lucide-react';
 
 interface TaskNotificationProps {
-  type: 'created' | 'updated' | 'deleted' | 'completed';
+  type: 'created' | 'updated' | 'deleted' | 'completed' | 'removed';
   title: string;
   description?: string;
   metadata?: string;
@@ -33,6 +33,12 @@ export function TaskNotification({ type, title, description, metadata }: TaskNot
       bgColor: 'bg-emerald-100',
       iconColor: 'text-emerald-600',
       label: 'Tarea completada',
+    },
+    removed: {
+      icon: UserMinus,
+      bgColor: 'bg-orange-100',
+      iconColor: 'text-orange-600',
+      label: 'Removido de tarea',
     },
   };
 
