@@ -15,7 +15,6 @@ interface BoardManagementHeaderProps {
   onFilterArea?: (area: string) => void
   onFilterStatus?: (status: string) => void
   onAddBoard?: () => void
-  onExport?: () => void
   totalBoards?: number
 }
 
@@ -80,6 +79,9 @@ export default function BoardManagementHeader({
               <SelectItem value="all">Todas las áreas</SelectItem>
               <SelectItem value="tecnologia">Tecnología</SelectItem>
               <SelectItem value="administracion">Administración</SelectItem>
+              <SelectItem value="marketing">Marketing</SelectItem>
+              <SelectItem value="recursos humanos">Recursos Humanos</SelectItem>
+
             </SelectContent>
           </Select>
         </div>

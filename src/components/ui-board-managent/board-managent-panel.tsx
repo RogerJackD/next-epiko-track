@@ -8,6 +8,7 @@ import BoardManagementTable from './board-managent-table'
 import ConfirmStatusModal from './confirm-status-modal'
 import BoardManagementHeader from './board-managent-header'
 import EditBoardModal from './edit-board-modal'
+import CreateBoardModal from './create-board-modal'
 
 interface BoardManagementPanelProps {
   onNavigateToBoard?: (board: Project) => void;
@@ -27,6 +28,9 @@ export default function BoardManagementPanel({ onNavigateToBoard }: BoardManagem
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [boardToEdit, setBoardToEdit] = useState<Project | null>(null);
 
+  // Estados para el modal de creación
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+
   // Estados para filtros
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -36,7 +40,6 @@ export default function BoardManagementPanel({ onNavigateToBoard }: BoardManagem
     loadBoards();
   }, []);
 
-  // ✅ useCallback para evitar recrear la función en cada render
   const applyFilters = useCallback(() => {
     let filtered = [...boards];
 
@@ -62,9 +65,8 @@ export default function BoardManagementPanel({ onNavigateToBoard }: BoardManagem
     }
 
     setFilteredBoards(filtered);
-  }, [boards, searchQuery, statusFilter, areaFilter]); // ✅ Todas las dependencias
+  }, [boards, searchQuery, statusFilter, areaFilter]);
 
-  // ✅ Ahora sí incluir applyFilters como dependencia
   useEffect(() => {
     applyFilters();
   }, [applyFilters]);
@@ -109,8 +111,12 @@ export default function BoardManagementPanel({ onNavigateToBoard }: BoardManagem
     loadBoards();
   };
 
+  const handleCreateSuccess = () => {
+    loadBoards();
+  };
+
   const handleAddBoard = () => {
-    toast.info('Función de crear tablero en desarrollo');
+    setCreateModalOpen(true);
   };
 
   if (isLoading) {
@@ -136,6 +142,12 @@ export default function BoardManagementPanel({ onNavigateToBoard }: BoardManagem
         onView={handleView}
         onEdit={handleEdit}
         onToggleStatus={handleToggleStatus}
+      />
+
+      <CreateBoardModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        onSuccess={handleCreateSuccess}
       />
 
       <ConfirmStatusModal
