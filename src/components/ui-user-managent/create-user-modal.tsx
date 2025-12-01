@@ -42,6 +42,11 @@ interface CreateUserModalProps {
   onSuccess: () => void
 }
 
+const ROLES = [
+  { id: 1, name: 'User', label: 'Usuario' },
+  { id: 3, name: 'Manager', label: 'Manager' },
+]
+
 export default function CreateUserModal({
   open,
   onOpenChange,
@@ -62,6 +67,7 @@ export default function CreateUserModal({
       phoneNumber: '',
       password: '',
       contractDate: '',
+      roleId: 1, // 👈 Valor por defecto: User
     }
   })
 
@@ -98,7 +104,8 @@ export default function CreateUserModal({
         address: data.address,
         phoneNumber: data.phoneNumber,
         password: data.password,
-        areaId: data.areaId
+        areaId: data.areaId,
+        roleId: data.roleId, // 👈 NUEVO
       })
 
       toast.success('¡Usuario creado!', {
@@ -133,7 +140,6 @@ export default function CreateUserModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              {/* Nombre */}
               <FormField
                 control={form.control}
                 name="firstName"
@@ -148,7 +154,6 @@ export default function CreateUserModal({
                 )}
               />
 
-              {/* Apellido */}
               <FormField
                 control={form.control}
                 name="lastName"
@@ -165,7 +170,6 @@ export default function CreateUserModal({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* Email */}
               <FormField
                 control={form.control}
                 name="email"
@@ -185,7 +189,6 @@ export default function CreateUserModal({
                 )}
               />
 
-              {/* Edad */}
               <FormField
                 control={form.control}
                 name="age"
@@ -208,7 +211,6 @@ export default function CreateUserModal({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* Teléfono */}
               <FormField
                 control={form.control}
                 name="phoneNumber"
@@ -226,7 +228,6 @@ export default function CreateUserModal({
                 )}
               />
 
-              {/* Fecha de contrato */}
               <FormField
                 control={form.control}
                 name="contractDate"
@@ -246,7 +247,6 @@ export default function CreateUserModal({
               />
             </div>
 
-            {/* Puesto */}
             <FormField
               control={form.control}
               name="job_title"
@@ -265,7 +265,6 @@ export default function CreateUserModal({
               )}
             />
 
-            {/* Dirección */}
             <FormField
               control={form.control}
               name="address"
@@ -284,53 +283,84 @@ export default function CreateUserModal({
               )}
             />
 
-            {/* Área */}
-            <FormField
-              control={form.control}
-              name="areaId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Área</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(parseInt(value))}
-                    disabled={isSubmitting || isLoadingAreas}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un área" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {isLoadingAreas ? (
-                        <div className="flex items-center justify-center py-4">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        </div>
-                      ) : areas.length === 0 ? (
-                        <div className="py-4 text-center text-sm text-muted-foreground">
-                          No hay áreas disponibles
-                        </div>
-                      ) : (
-                        areas.map((area) => (
-                          <SelectItem key={area.id} value={area.id.toString()}>
-                            <div className="flex flex-col">
-                              <span className="font-medium">{area.title}</span>
-                              {area.descripcion && (
-                                <span className="text-xs text-muted-foreground">
-                                  {area.descripcion}
-                                </span>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* 👇 GRID PARA ÁREA Y ROL */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="areaId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Área</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      disabled={isSubmitting || isLoadingAreas}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un área" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {isLoadingAreas ? (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          </div>
+                        ) : areas.length === 0 ? (
+                          <div className="py-4 text-center text-sm text-muted-foreground">
+                            No hay áreas disponibles
+                          </div>
+                        ) : (
+                          areas.map((area) => (
+                            <SelectItem key={area.id} value={area.id.toString()}>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{area.title}</span>
+                                {area.descripcion && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {area.descripcion}
+                                  </span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Contraseña */}
+              {/* 👇 NUEVO CAMPO DE ROL */}
+              <FormField
+                control={form.control}
+                name="roleId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rol</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      value={field.value?.toString()}
+                      disabled={isSubmitting}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un rol" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ROLES.map((role) => (
+                          <SelectItem key={role.id} value={role.id.toString()}>
+                            {role.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="password"
