@@ -11,6 +11,7 @@ export interface User {
   job_title: string;
   phoneNumber: string;
   address: string;
+  roleId: number;
   role: {
     id: number;
     name: string;
@@ -33,6 +34,7 @@ export interface CreateUserDTO {
   phoneNumber: string;
   password: string;
   areaId: number;
+  roleId: number;
 }
 
 export interface UpdateUserDTO {
@@ -47,6 +49,7 @@ export interface UpdateUserDTO {
   password?: string;
   areaId?: number;
   status?: boolean; 
+  roleId?: number;
 }
 
 export interface ChangePasswordDTO {
