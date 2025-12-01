@@ -44,6 +44,11 @@ interface EditUserModalProps {
   user: User | null
 }
 
+const ROLES = [
+  { id: 1, name: 'User', label: 'Usuario' },
+  { id: 3, name: 'Manager', label: 'Manager' },
+]
+
 export default function EditUserModal({
   open,
   onOpenChange,
@@ -85,6 +90,7 @@ export default function EditUserModal({
         phoneNumber: user.phoneNumber,
         contractDate: user.contractDate || '',
         areaId: user.area?.id || undefined,
+        roleId: user.roleId || 1, 
       })
     }
   }, [open, user, form])
@@ -119,6 +125,7 @@ export default function EditUserModal({
           address: data.address,
           phoneNumber: data.phoneNumber,
           areaId: data.areaId,
+          roleId: data.roleId, 
           status: user.status
         },
         user.id
@@ -156,7 +163,6 @@ export default function EditUserModal({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              {/* Nombre */}
               <FormField
                 control={form.control}
                 name="firstName"
@@ -171,7 +177,6 @@ export default function EditUserModal({
                 )}
               />
 
-              {/* Apellido */}
               <FormField
                 control={form.control}
                 name="lastName"
@@ -188,7 +193,6 @@ export default function EditUserModal({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* Email */}
               <FormField
                 control={form.control}
                 name="email"
@@ -208,7 +212,6 @@ export default function EditUserModal({
                 )}
               />
 
-              {/* Edad */}
               <FormField
                 control={form.control}
                 name="age"
@@ -231,7 +234,6 @@ export default function EditUserModal({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* Teléfono */}
               <FormField
                 control={form.control}
                 name="phoneNumber"
@@ -249,7 +251,6 @@ export default function EditUserModal({
                 )}
               />
 
-              {/* Fecha de contrato */}
               <FormField
                 control={form.control}
                 name="contractDate"
@@ -269,7 +270,6 @@ export default function EditUserModal({
               />
             </div>
 
-            {/* Puesto */}
             <FormField
               control={form.control}
               name="job_title"
@@ -288,7 +288,6 @@ export default function EditUserModal({
               )}
             />
 
-            {/* Dirección */}
             <FormField
               control={form.control}
               name="address"
@@ -307,52 +306,84 @@ export default function EditUserModal({
               )}
             />
 
-            {/* Área */}
-            <FormField
-              control={form.control}
-              name="areaId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Área</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(parseInt(value))}
-                    value={field.value?.toString()}
-                    disabled={isSubmitting || isLoadingAreas}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un área" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {isLoadingAreas ? (
-                        <div className="flex items-center justify-center py-4">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        </div>
-                      ) : areas.length === 0 ? (
-                        <div className="py-4 text-center text-sm text-muted-foreground">
-                          No hay áreas disponibles
-                        </div>
-                      ) : (
-                        areas.map((area) => (
-                          <SelectItem key={area.id} value={area.id.toString()}>
-                            <div className="flex flex-col">
-                              <span className="font-medium">{area.title}</span>
-                              {area.descripcion && (
-                                <span className="text-xs text-muted-foreground">
-                                  {area.descripcion}
-                                </span>
-                              )}
-                            </div>
+            {/* GRID PARA ÁREA Y ROL */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="areaId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Área</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      value={field.value?.toString()}
+                      disabled={isSubmitting || isLoadingAreas}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un área" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {isLoadingAreas ? (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          </div>
+                        ) : areas.length === 0 ? (
+                          <div className="py-4 text-center text-sm text-muted-foreground">
+                            No hay áreas disponibles
+                          </div>
+                        ) : (
+                          areas.map((area) => (
+                            <SelectItem key={area.id} value={area.id.toString()}>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{area.title}</span>
+                                {area.descripcion && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {area.descripcion}
+                                  </span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* CAMPO DE ROL */}
+              <FormField
+                control={form.control}
+                name="roleId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rol</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      value={field.value?.toString()}
+                      disabled={isSubmitting}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un rol" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ROLES.map((role) => (
+                          <SelectItem key={role.id} value={role.id.toString()}>
+                            {role.label}
                           </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <DialogFooter>
               <Button
