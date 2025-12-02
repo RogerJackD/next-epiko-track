@@ -133,7 +133,10 @@ export default function TaskCard({ task, currentBoardId }: TaskCardProps) {
     <>
       <Card 
         ref={setNodeRef} 
-        style={style}
+        style={{
+          ...style,
+          touchAction: 'none',  // <-- AGREGAR ESTO
+        }}
         className={`bg-gray-50 group relative ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         {...attributes}
         {...listeners}

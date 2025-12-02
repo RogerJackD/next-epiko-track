@@ -5,7 +5,7 @@ import {
   DragEndEvent, 
   DragOverlay, 
   DragStartEvent, 
-  PointerSensor, 
+  MouseSensor,
   TouchSensor, 
   useSensor, 
   useSensors 
@@ -55,17 +55,17 @@ export default function KanbanBoard({
     const isSubscribedRef = useRef(false);
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(TouchSensor, {
-            activationConstraint: {
-                delay: 200,
-                tolerance: 5,
-            },
-        })
+    useSensor(MouseSensor, {
+        activationConstraint: {
+            distance: 8,
+        },
+    }),
+    useSensor(TouchSensor, {
+        activationConstraint: {
+            delay: 250,      // Aumentado a 250ms
+            tolerance: 8,    // Aumentado a 8px
+        },
+    })
     );
 
     // Filtrar tareas
