@@ -29,23 +29,20 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Loader2, UserPlus } from 'lucide-react'
+import { Loader2, UserPlus, Shield } from 'lucide-react'
 import { createUserSchema, CreateUserFormData } from '@/validators/user.validator'
 import { userService } from '@/services/user-service'
 import { areaService } from '@/services/area-service'
 import { Area } from '@/types/area'
 import { toast } from 'sonner'
+import { usePermissions } from '@/hooks/usePermissions'
+import { ROLE_LABELS, ROLE_IDS } from '@/types/permissions'
 
 interface CreateUserModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
 }
-
-const ROLES = [
-  { id: 1, name: 'User', label: 'Usuario' },
-  { id: 3, name: 'Manager', label: 'Manager' },
-]
 
 export default function CreateUserModal({
   open,
@@ -55,6 +52,10 @@ export default function CreateUserModal({
   const [areas, setAreas] = useState<Area[]>([])
   const [isLoadingAreas, setIsLoadingAreas] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // ✨ Obtener roles que el usuario actual puede crear
+  const { getCreatableRoles, isSuperAdmin } = usePermissions()
+  const creatableRoles = getCreatableRoles()
 
   const form = useForm<CreateUserFormData>({
     resolver: zodResolver(createUserSchema),
@@ -67,7 +68,7 @@ export default function CreateUserModal({
       phoneNumber: '',
       password: '',
       contractDate: '',
-      roleId: 1, // 👈 Valor por defecto: User
+      roleId: ROLE_IDS.user, // 👈 Valor por defecto: User (ID 1)
     }
   })
 
@@ -105,7 +106,7 @@ export default function CreateUserModal({
         phoneNumber: data.phoneNumber,
         password: data.password,
         areaId: data.areaId,
-        roleId: data.roleId, // 👈 NUEVO
+        roleId: data.roleId,
       })
 
       toast.success('¡Usuario creado!', {
@@ -283,7 +284,6 @@ export default function CreateUserModal({
               )}
             />
 
-            {/* 👇 GRID PARA ÁREA Y ROL */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -330,13 +330,18 @@ export default function CreateUserModal({
                 )}
               />
 
-              {/* 👇 NUEVO CAMPO DE ROL */}
+              {/* ✨ CAMPO DE ROL CON PERMISOS DINÁMICOS */}
               <FormField
                 control={form.control}
                 name="roleId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Rol</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      Rol
+                      {isSuperAdmin() && (
+                        <Shield className="h-3.5 w-3.5 text-purple-500" />
+                      )}
+                    </FormLabel>
                     <Select
                       onValueChange={(value) => field.onChange(parseInt(value))}
                       value={field.value?.toString()}
@@ -348,13 +353,22 @@ export default function CreateUserModal({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {ROLES.map((role) => (
-                          <SelectItem key={role.id} value={role.id.toString()}>
-                            {role.label}
+                        {creatableRoles.map((role) => (
+                          <SelectItem key={role} value={ROLE_IDS[role].toString()}>
+                            <div className="flex items-center gap-2">
+                              {role === 'admin' && <Shield className="h-3.5 w-3.5 text-blue-500" />}
+                              {role === 'super-admin' && <Shield className="h-3.5 w-3.5 text-purple-500" />}
+                              <span>{ROLE_LABELS[role]}</span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormDescription className="text-xs">
+                      {isSuperAdmin() 
+                        ? "Como Super Admin, puedes crear cualquier tipo de usuario" 
+                        : "Solo puedes crear usuarios User y Manager"}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
