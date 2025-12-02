@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Avatar, AvatarFallback } from '../ui/avatar'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { useUserTasksContext } from '@/contexts/UserTasksContext'
 
 const priorityConfig = {
@@ -33,23 +34,9 @@ const statusConfig = {
 }
 
 export default function TasksUserPanel() {
-  //const { tasks, taskCount, isLoading, isConnected } = useUserTasks()
   const { tasks, taskCount, isLoading, isConnected } = useUserTasksContext()
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterPriority, setFilterPriority] = useState<string>('all')
-
-  // const formatDate = (dateString: string | null) => {
-  //   if (!dateString) return 'Sin fecha'
-  //   return new Date(dateString).toLocaleDateString('es-ES', {
-  //     day: '2-digit',
-  //     month: 'short',
-  //     year: 'numeric'
-  //   })
-  // }
-
-  // const getInitials = (firstName: string, lastName: string) => {
-  //   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
-  // }
 
   // Filtrar tareas
   const filteredTasks = tasks.filter(task => {
@@ -181,6 +168,14 @@ function TaskCard({ task }: { task: UserTask }) {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
   }
 
+  const getFullName = (firstName: string, lastName: string) => {
+    return `${firstName} ${lastName}`
+  }
+
+  const getFirstName = (firstName: string) => {
+    return firstName
+  }
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
@@ -233,7 +228,7 @@ function TaskCard({ task }: { task: UserTask }) {
           <p className="text-xs text-muted-foreground">{task.board.area.name}</p>
         </div>
 
-        {/* Colaboradores */}
+        {/* Colaboradores - Desktop: Tooltips compactos | Mobile: Lista completa visible */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Users className="h-3.5 w-3.5 text-muted-foreground" />
@@ -241,22 +236,71 @@ function TaskCard({ task }: { task: UserTask }) {
               {task.tasksUsers.length} colaborador{task.tasksUsers.length !== 1 ? 'es' : ''}
             </p>
           </div>
-          <div className="flex -space-x-2">
-            {task.tasksUsers.slice(0, 4).map((taskUser) => (
-              <Avatar 
-                key={taskUser.id} 
-                className="h-8 w-8 border-2 border-background"
+          
+          {/* Versión Desktop - Avatares compactos con Tooltips */}
+          <TooltipProvider delayDuration={300}>
+            <div className="hidden md:flex -space-x-2">
+              {task.tasksUsers.slice(0, 4).map((taskUser) => (
+                <Tooltip key={taskUser.id}>
+                  <TooltipTrigger asChild>
+                    <Avatar 
+                      className="h-8 w-8 border-2 border-background cursor-pointer hover:z-10 hover:scale-110 transition-transform"
+                    >
+                      <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                        {getInitials(taskUser.user.firstName, taskUser.user.lastName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="z-50">
+                    <p className="font-medium">
+                      {getFullName(taskUser.user.firstName, taskUser.user.lastName)}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+              {task.tasksUsers.length > 4 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="h-8 w-8 rounded-full border-2 border-background bg-muted flex items-center justify-center cursor-pointer hover:z-10 hover:scale-110 transition-transform">
+                      <span className="text-xs font-medium">
+                        +{task.tasksUsers.length - 4}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="z-50">
+                    <div className="space-y-1">
+                      {task.tasksUsers.slice(4).map((taskUser) => (
+                        <p key={taskUser.id} className="text-sm">
+                          {getFullName(taskUser.user.firstName, taskUser.user.lastName)}
+                        </p>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+          </TooltipProvider>
+
+          {/* Versión Mobile - Lista visible con nombres */}
+          <div className="md:hidden space-y-2">
+            {task.tasksUsers.slice(0, 3).map((taskUser) => (
+              <div 
+                key={taskUser.id}
+                className="flex items-center gap-2 bg-muted/50 rounded-md px-2 py-1.5"
               >
-                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                  {getInitials(taskUser.user.firstName, taskUser.user.lastName)}
-                </AvatarFallback>
-              </Avatar>
-            ))}
-            {task.tasksUsers.length > 4 && (
-              <div className="h-8 w-8 rounded-full border-2 border-background bg-muted flex items-center justify-center">
-                <span className="text-xs font-medium">
-                  +{task.tasksUsers.length - 4}
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
+                    {getInitials(taskUser.user.firstName, taskUser.user.lastName)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-medium truncate">
+                  {getFullName(taskUser.user.firstName, taskUser.user.lastName)}
                 </span>
+              </div>
+            ))}
+            {task.tasksUsers.length > 3 && (
+              <div className="text-xs text-muted-foreground pl-8">
+                +{task.tasksUsers.length - 3} más
               </div>
             )}
           </div>
