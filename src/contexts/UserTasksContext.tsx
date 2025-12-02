@@ -27,9 +27,8 @@ export function UserTasksProvider({ children }: { children: React.ReactNode }) {
   
   const isInitialized = useRef(false);
   const userIdRef = useRef<string | null>(null);
-  const tasksRef = useRef<UserTask[]>([]); // ✅ Ref para acceder a tasks sin causar re-render
+  const tasksRef = useRef<UserTask[]>([]);
 
-  // ✅ Actualizar ref cuando cambian las tasks
   useEffect(() => {
     tasksRef.current = tasks;
   }, [tasks]);
@@ -104,7 +103,6 @@ export function UserTasksProvider({ children }: { children: React.ReactNode }) {
     });
 
     socketService.onTaskUpdated((data: TaskUpdatedEvent) => {
-      // ✅ Usar tasksRef.current en lugar de tasks para evitar dependencia
       const currentTasks = tasksRef.current;
       
       // Verificar si el usuario ESTÁ actualmente asignado a la tarea
@@ -130,13 +128,31 @@ export function UserTasksProvider({ children }: { children: React.ReactNode }) {
           }
         );
         
-        // Actualizar lista de tareas (la tarea será removida)
         setTimeout(refreshTasks, 100);
         return;
       }
 
-      // Caso 2: Usuario SIGUE asignado a la tarea (actualización normal)
-      if (isCurrentlyAssigned) {
+      // Caso 2: Usuario fue AGREGADO a una tarea existente (no estaba asignado pero ahora sí)
+      if (!wasAssigned && isCurrentlyAssigned) {
+        toast.success(
+          <TaskNotification
+            type="added"
+            title={data.task.title}
+            description="Has sido agregado a esta tarea"
+            metadata={data.task.board?.title ? `Tablero: ${data.task.board.title}` : undefined}
+          />,
+          {
+            duration: 5000,
+            className: 'bg-white border-l-4 border-l-green-500 shadow-lg',
+          }
+        );
+        
+        setTimeout(refreshTasks, 100);
+        return;
+      }
+
+      // Caso 3: Usuario SIGUE asignado a la tarea (actualización normal)
+      if (isCurrentlyAssigned && wasAssigned) {
         toast.info(
           <TaskNotification
             type="updated"
@@ -179,7 +195,7 @@ export function UserTasksProvider({ children }: { children: React.ReactNode }) {
       socketService.removeAllListeners();
       socketService.disconnect();
     };
-  }, [user?.id, isLoadingUser, refreshTasks]); // ✅ Removí 'tasks' de las dependencias
+  }, [user?.id, isLoadingUser, refreshTasks]);
 
   return (
     <UserTasksContext.Provider value={{ tasks, taskCount, isLoading, isConnected, refreshTasks }}>
