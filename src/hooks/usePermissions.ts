@@ -1,7 +1,7 @@
 // hooks/usePermissions.ts
 import { useMemo } from 'react';
 import { useAuth } from './useAuth';
-import { Permission, ROLE_PERMISSIONS, UserRole } from '@/types/permissions';
+import { Permission, ROLE_PERMISSIONS, UserRole, CREATABLE_ROLES } from '@/types/permissions';
 
 export function usePermissions() {
   const { user } = useAuth();
@@ -11,6 +11,11 @@ export function usePermissions() {
     
     const roleName = user.role.name.toLowerCase() as UserRole;
     return ROLE_PERMISSIONS[roleName] || [];
+  }, [user?.role?.name]);
+
+  const userRole = useMemo(() => {
+    if (!user?.role?.name) return null;
+    return user.role.name.toLowerCase() as UserRole;
   }, [user?.role?.name]);
 
   const hasPermission = (permission: Permission): boolean => {
@@ -33,12 +38,10 @@ export function usePermissions() {
 
   // Verificar si puede mover una tarea específica
   const canMoveTask = (taskUsersIds: string[]): boolean => {
-    // Si tiene permiso para mover cualquier tarea
     if (hasPermission(Permission.MOVE_ANY_TASK)) {
       return true;
     }
     
-    // Si tiene permiso para mover sus propias tareas y es dueño
     if (hasPermission(Permission.MOVE_OWN_TASK) && isTaskOwner(taskUsersIds)) {
       return true;
     }
@@ -72,8 +75,36 @@ export function usePermissions() {
     return false;
   };
 
+  // Verificar qué roles puede crear el usuario actual
+  const getCreatableRoles = (): UserRole[] => {
+    if (!userRole) return [];
+    return CREATABLE_ROLES[userRole] || [];
+  };
+
+  // Verificar si puede crear un rol específico
+  const canCreateRole = (roleToCreate: UserRole): boolean => {
+    const creatableRoles = getCreatableRoles();
+    return creatableRoles.includes(roleToCreate);
+  };
+
+  //Verificar si puede crear usuarios admin
+  const canCreateAdminUsers = (): boolean => {
+    return hasPermission(Permission.CREATE_ADMIN_USER);
+  };
+
+  //Verificar si es super admin
+  const isSuperAdmin = (): boolean => {
+    return userRole === UserRole.SUPER_ADMIN;
+  };
+
+  //Verificar si es admin o superior
+  const isAdminOrAbove = (): boolean => {
+    return userRole === UserRole.SUPER_ADMIN || userRole === UserRole.ADMIN;
+  };
+
   return {
     permissions: userPermissions,
+    userRole,
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
@@ -81,5 +112,10 @@ export function usePermissions() {
     canMoveTask,
     canEditTask,
     canDeleteTask,
+    getCreatableRoles,
+    canCreateRole,
+    canCreateAdminUsers,
+    isSuperAdmin,
+    isAdminOrAbove,
   };
 }
