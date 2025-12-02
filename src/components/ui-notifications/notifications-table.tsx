@@ -58,6 +58,10 @@ export const NotificationsTable = ({ notifications }: NotificationsTableProps) =
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
+  const getFullName = (firstName: string, lastName: string) => {
+    return `${firstName} ${lastName}`;
+  };
+
   const getAvatarColor = (id: string) => {
     const colors = [
       'bg-blue-500',
@@ -240,57 +244,48 @@ export const NotificationsTable = ({ notifications }: NotificationsTableProps) =
                   </div>
                 </div>
 
-                {/* Asignados */}
+                {/* Asignados - Lista visible con nombres en móvil */}
                 <div className="pt-2 border-t border-gray-100">
                   <div className="flex items-center gap-2 mb-2">
                     <Users className="w-4 h-4 text-gray-400" />
-                    <span className="text-xs font-semibold text-gray-500">ASIGNADOS</span>
+                    <span className="text-xs font-semibold text-gray-500">
+                      ASIGNADOS ({notification.tasksUsers?.length || 0})
+                    </span>
                   </div>
-                  <TooltipProvider>
-                    <div className="flex -space-x-2">
-                      {notification.tasksUsers && notification.tasksUsers.length > 0 ? (
-                        <>
-                          {notification.tasksUsers.slice(0, 5).map((taskUser) => (
-                            <Tooltip key={taskUser.id}>
-                              <TooltipTrigger asChild>
-                                <Avatar className={`h-8 w-8 border-2 border-white cursor-pointer ${getAvatarColor(taskUser.user.id)}`}>
-                                  <AvatarFallback className={`text-xs font-medium text-white ${getAvatarColor(taskUser.user.id)}`}>
-                                    {getInitials(taskUser.user.firstName, taskUser.user.lastName)}
-                                  </AvatarFallback>
-                                </Avatar>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-gray-900 text-white">
-                                <div className="text-sm">
-                                  <p className="font-semibold">{taskUser.user.firstName} {taskUser.user.lastName}</p>
-                                  <p className="text-xs text-gray-300">{taskUser.user.job_title}</p>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          ))}
-                          {notification.tasksUsers.length > 5 && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-xs font-medium text-gray-600">
-                                  +{notification.tasksUsers.length - 5}
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="bg-gray-900 text-white">
-                                <div className="text-sm max-w-xs">
-                                  {notification.tasksUsers.slice(5).map((taskUser) => (
-                                    <p key={taskUser.id} className="py-0.5">
-                                      {taskUser.user.firstName} {taskUser.user.lastName}
-                                    </p>
-                                  ))}
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </>
-                      ) : (
-                        <span className="text-sm text-gray-400 italic">Sin asignar</span>
+                  
+                  {notification.tasksUsers && notification.tasksUsers.length > 0 ? (
+                    <div className="space-y-2">
+                      {notification.tasksUsers.slice(0, 3).map((taskUser) => (
+                        <div 
+                          key={taskUser.id}
+                          className="flex items-center gap-2 bg-gray-50 rounded-md px-2 py-1.5"
+                        >
+                          <Avatar className={`h-6 w-6 ${getAvatarColor(taskUser.user.id)}`}>
+                            <AvatarFallback className={`text-[10px] font-medium text-white ${getAvatarColor(taskUser.user.id)}`}>
+                              {getInitials(taskUser.user.firstName, taskUser.user.lastName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-gray-900 truncate">
+                              {getFullName(taskUser.user.firstName, taskUser.user.lastName)}
+                            </p>
+                            {taskUser.user.job_title && (
+                              <p className="text-[10px] text-gray-500 truncate">
+                                {taskUser.user.job_title}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {notification.tasksUsers.length > 3 && (
+                        <div className="text-xs text-gray-500 pl-8">
+                          +{notification.tasksUsers.length - 3} colaborador{notification.tasksUsers.length - 3 !== 1 ? 'es' : ''} más
+                        </div>
                       )}
                     </div>
-                  </TooltipProvider>
+                  ) : (
+                    <span className="text-sm text-gray-400 italic">Sin asignar</span>
+                  )}
                 </div>
 
                 {/* Proyecto y Área */}
