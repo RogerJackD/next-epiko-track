@@ -1,18 +1,21 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
 descargar dependencias:
 ````
 npm install
 ````
-ejecutar frontend
+descargar dependencias:
+````
+npm install
+````
+crear archivo .env.local con las siguientes variables de entorno:
+```
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3030/api
+NEXT_PUBLIC_API_BASE_URL_SOCKET=http://localhost:3030
+```
+Ejecutar frontend 
 ```
 npm run dev
-
 ```
+
 
 abrir: [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
