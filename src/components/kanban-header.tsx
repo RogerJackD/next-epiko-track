@@ -48,7 +48,6 @@ export default function KanbanHeader({
   });
 
   const handleBoardChange = (BoardId: string) => {
-    console.log("📌 Usuario seleccionó tablero:", BoardId);
     onBoardChange(BoardId);
   }
 
@@ -73,19 +72,17 @@ export default function KanbanHeader({
     filters.priority !== 'ALL' || 
     filters.assignedToMe;
 
-  // ✅ Solo cargar boards cuando cambia el área - SIN auto-selección
+  // Solo cargar boards cuando cambia el área - SIN auto-selección
   useEffect(() => {
     const fetchBoardsByArea = async() => {
       try {
-        console.log("🔄 Cargando boards del área:", activeArea.id);
         const boardsResponseData: Board[] | null = await boardService.getBoardsByArea(activeArea.id);
-        console.log("✅ Boards cargados:", boardsResponseData?.length || 0);
         setBoards(boardsResponseData);
         
-        // ✅ NO seleccionar automáticamente ningún tablero
+        // NO seleccionar automáticamente ningún tablero
         // El usuario debe elegir manualmente
       } catch (error) {
-        console.error("❌ Error al cargar boards:", error);
+        console.error("Error al cargar boards:", error);
         setBoards(null);
       }
     }

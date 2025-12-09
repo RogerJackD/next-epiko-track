@@ -32,15 +32,10 @@ function DashboardContent() {
   useEffect(() => {
     if (user?.area?.id) {
       setActiveArea(user.area.id.toString());
-      console.log("🏠 Área inicial del usuario:", user.area.id);
     }
   }, [user?.area?.id]);
 
   const handleNavigateToBoard = useCallback((board: Project) => {
-    console.log('🎯 [Navegación] Navegando a tablero desde gestión de tableros');
-    console.log('📋 [Navegación] Board:', board.title, '| ID:', board.id);
-    console.log('🏢 [Navegación] Área:', board.area.name, '| ID:', board.area.id);
-    
     const targetAreaId = board.area.id.toString();
     const targetBoardId = board.id.toString();
     
@@ -55,24 +50,22 @@ function DashboardContent() {
   }, []);
 
   const handleAreaChange = useCallback((newArea: string) => {
-    console.log('🔄 [Navegación] Cambio de área:', activeArea, '→', newArea);
+    console.log('Cambio de área:', activeArea, '→', newArea);
     
     setActiveArea(newArea);
     
-    // ✅ CRÍTICO: Limpiar boardId cuando cambias de área manualmente
+    // Limpiar boardId cuando cambias de área manualmente
     // Esto evita que se muestre el tablero del área anterior
     setBoardId(null);
     
-    console.log('🧹 [Navegación] boardId limpiado para nueva área');
   }, [activeArea]);
 
   const handleBoardChange = useCallback((newBoardId: string | null) => {
-    console.log('📌 [Navegación] Cambio de tablero:', boardId, '→', newBoardId);
+    console.log('[Navegación] Cambio de tablero:', boardId, ':', newBoardId);
     setBoardId(newBoardId);
   }, [boardId]);
 
   const renderContent = () => {
-    console.log('🎨 [Render] activeArea:', activeArea, '| boardId:', boardId);
     
     // Secciones especiales (sin tableros Kanban)
     if (activeArea === "userManagement") {

@@ -9,7 +9,6 @@ import {
 } from '@/types/socket-events';
 import { KanbanBoardResponse } from '@/types/kanbanResponse';
 
-// ✨ Nuevo tipo para el evento de actualización del tablero
 interface BoardUpdatedEvent {
   boardId: number;
   board_id: number;
@@ -30,7 +29,7 @@ class SocketService {
     }
 
     if (this.isConnecting && this.socket) {
-      console.log('🔄 Conexión en proceso...');
+      console.log('Conexión en proceso...');
       return this.socket;
     }
 
@@ -38,7 +37,6 @@ class SocketService {
 
     // Siempre crear un socket si no existe
     if (!this.socket) {
-      console.log('🚀 Creando nueva conexión WebSocket...');
       this.socket = io(this.SOCKET_URL, {
         transports: ['websocket'],
         reconnection: true,
@@ -48,17 +46,16 @@ class SocketService {
       });
 
       this.socket.on('connect', () => {
-        console.log('✅ Socket conectado:', this.socket?.id);
         this.isConnecting = false;
       });
 
       this.socket.on('disconnect', (reason) => {
-        console.log('❌ Socket desconectado. Razón:', reason);
+        console.log('Socket desconectado. Razón:', reason);
         this.isConnecting = false;
       });
 
       this.socket.on('connect_error', (error) => {
-        console.error('❌ Error de conexión:', error.message);
+        console.error('Error de conexión:', error.message);
         this.isConnecting = false;
       });
     }
@@ -68,7 +65,7 @@ class SocketService {
 
   disconnect() {
     if (this.socket) {
-      console.log('🔌 Desconectando socket...');
+      console.log('Desconectando socket...');
       this.socket.disconnect();
       this.socket = null;
       this.isConnecting = false;
@@ -76,11 +73,11 @@ class SocketService {
   }
 
   // ============================================
-  // 🎯 MÉTODOS PARA TABLERO KANBAN (NUEVOS)
+  // MÉTODOS PARA TABLERO KANBAN 
   // ============================================
 
   /**
-   * ✨ NUEVO: Suscribirse a un tablero específico
+   * Suscribirse a un tablero específico
    * Recibe datos iniciales y escucha actualizaciones en tiempo real
    */
   subscribeToBoard(
@@ -90,7 +87,6 @@ class SocketService {
     onBoardUpdate: (data: BoardUpdatedEvent) => void
   ) {
     if (!this.socket?.connected) {
-      console.warn('⚠️ Socket no conectado, conectando...');
       this.connect();
     }
 
@@ -98,24 +94,18 @@ class SocketService {
     this.socket?.off('board-data');
     this.socket?.off('board-updated');
 
-    console.log(`📤 Emitiendo suscripción al tablero ${boardId} con userId ${userId}`);
-
     // Emitir suscripción
     this.socket?.emit('subscribe-board', { boardId, userId });
 
     // Escuchar datos iniciales
     this.socket?.on('board-data', (data) => {
-      console.log('📥 Evento board-data recibido:', data);
-      
       if (!data) {
-        console.error('❌ Datos iniciales son undefined o null');
         return;
       }
       
       // Si viene envuelto en un objeto response
       const boardData = data.data || data;
       
-      console.log('✅ Procesando datos del tablero:', boardData);
       onBoardData(boardData);
     });
 
@@ -124,18 +114,17 @@ class SocketService {
       console.log('🔄 Actualización del tablero recibida:', data);
       
       if (!data) {
-        console.error('❌ Datos de actualización son undefined o null');
+        console.error('Datos de actualización son undefined o null');
         return;
       }
       
       onBoardUpdate(data);
     });
 
-    console.log(`✅ Suscrito al tablero ${boardId}`);
   }
 
   /**
-   * ✨ NUEVO: Desuscribirse de un tablero
+   * Desuscribirse de un tablero
    */
   unsubscribeFromBoard(boardId: number) {
     if (!this.socket?.connected) return;
@@ -143,17 +132,14 @@ class SocketService {
     this.socket?.emit('unsubscribe-board', { boardId });
     this.socket?.off('board-data');
     this.socket?.off('board-updated');
-
-    console.log(`❌ Desuscrito del tablero ${boardId}`);
   }
 
   // ============================================
-  // 📬 MÉTODOS PARA NOTIFICACIONES DE USUARIO (MANTENER)
+  //  MÉTODOS PARA NOTIFICACIONES DE USUARIO
   // ============================================
 
   getUserTasks(userId: string, callback: (data: UserTasksResponse) => void) {
     if (!this.socket?.connected) {
-      console.warn('⚠️ Socket no conectado, conectando...');
       this.connect();
     }
 
@@ -164,7 +150,7 @@ class SocketService {
 
   subscribeToUserTasks(userId: string, callback: (data: UserTasksResponse) => void) {
     if (!this.socket?.connected) {
-      console.warn('⚠️ Socket no conectado, conectando...');
+      console.warn('Socket no conectado, conectando...');
       this.connect();
     }
 

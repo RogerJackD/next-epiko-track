@@ -118,7 +118,7 @@ export default function CreateTaskDialog({
       setSelectedUsers([])
       onOpenChange(false)
       
-      // ✨ YA NO llamamos onTaskCreated() - WebSocket se encarga de actualizar el tablero
+      // WebSocket se encarga de actualizar el tablero
     } catch (error) {
       toast.error('Error al crear tarea', {
         description: error instanceof Error ? error.message : 'Error desconocido'

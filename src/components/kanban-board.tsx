@@ -131,8 +131,6 @@ export default function KanbanBoard({
     useEffect(() => {
       if (!user?.id || !boardIdValue || isSubscribedRef.current) return;
 
-      console.log(`🔌 Configurando WebSocket para tablero ${boardIdValue}`);
-
       // Conectar socket
       socketService.connect();
 
