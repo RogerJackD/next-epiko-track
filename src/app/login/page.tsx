@@ -120,8 +120,28 @@ export default function LoginPage() {
                 "Iniciar sesión"
               )}
             </Button>
+            <div className="mt-4 rounded-md border border-dashed border-gray-300 bg-gray-50 p-3">
+  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Demo</p>
+  <div className="flex flex-col gap-2">
+    {[
+      { role: "Admin", email: "admin@gmail.com" },
+      { role: "Manager", email: "manager@gmail.com" },
+      { role: "User", email: "user@gmail.com" },
+    ].map(({ role, email }) => (
+      <div key={email} className="flex items-center justify-between">
+        <span className="text-xs font-medium text-gray-500 w-16">{role}</span>
+        <span className="text-xs text-gray-600 font-mono">{email}</span>
+      </div>
+    ))}
+    <div className="border-t border-gray-200 mt-1 pt-1">
+      <p className="text-xs text-gray-400">Contraseñaxcd: <span className="font-mono text-gray-500">Password123</span></p>
+    </div>
+  </div>
+</div>
           </form>
         </CardContent>
+     
+        
       </Card>
     </main>
   )
